@@ -34,10 +34,12 @@
 - Card 组件自带 `py-6 gap-6`，做列表容器时需 `py-0 gap-0 overflow-hidden` 覆盖
 - 设置页列表模式: Card + Separator + 等高按钮行，间距统一 px-4 py-3.5
 - PowerShell 不支持 `head`，用 `Select-Object -First N`
+- ESLint + Prettier: `eslint.config.js` (flat config) + `.prettierrc` (4 空格缩进)，`npm run lint` 纠错+格式化
 
 ## 工作总结
 
 ### 项目结构 (模块化)
+
 ```
 src/
 ├── router/index.ts
@@ -60,18 +62,20 @@ src/
 ```
 
 ### 路由
+
 - `/` → Splash (检查 onboarded → /landing 或 /app)
 - `/landing` → 3 段引导 (Apple 风格)
 - `/app` → AppLayout (macOS Finder 风格侧边栏)
-  - `/app` → Home (欢迎+快速操作+最近播放)
-  - `/app/settings` → Settings 列表
-  - `/app/settings/profile` → Loaf Network 账号
-  - `/app/settings/account` → 第三方平台账号
-  - `/app/settings/appearance` → 外观
-  - `/app/settings/privacy` → 隐私
-  - `/app/settings/about` → 关于
+    - `/app` → Home (欢迎+快速操作+最近播放)
+    - `/app/settings` → Settings 列表
+    - `/app/settings/profile` → Loaf Network 账号
+    - `/app/settings/account` → 第三方平台账号
+    - `/app/settings/appearance` → 外观
+    - `/app/settings/privacy` → 隐私
+    - `/app/settings/about` → 关于
 
 ### 设计风格 (Apple 风格)
+
 - Landing: 大标题 text-7xl，毛玻璃 Logo 容器，半透明 Badge
 - SplashScreen: 分层 stagger 动画，渐变装饰线
 - Settings: Card 容器 + Separator 分隔，图标 40px 圆角方块
@@ -79,4 +83,5 @@ src/
 - 侧边栏: macOS Finder 风格，子路由高亮支持
 
 ### Store 字段
+
 - `onboarded`, `theme`, `ncmCookie`, `ncmUser` (UserProfile), `clarity`

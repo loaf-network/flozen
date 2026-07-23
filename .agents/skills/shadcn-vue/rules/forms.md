@@ -52,7 +52,7 @@ Never use raw `Input` or `Textarea` inside an `InputGroup`.
 
 ```html
 <InputGroup>
-  <Input placeholder="Search..." />
+    <input placeholder="Search..." />
 </InputGroup>
 ```
 
@@ -80,10 +80,10 @@ Never place a `Button` directly inside or adjacent to an `Input` with custom pos
 
 ```html
 <div class="relative">
-  <Input placeholder="Search..." class="pr-10" />
-  <Button class="absolute right-0 top-0" size="icon">
-    <SearchIcon />
-  </Button>
+    <input placeholder="Search..." class="pr-10" />
+    <button class="absolute right-0 top-0" size="icon">
+        <SearchIcon />
+    </button>
 </div>
 ```
 
@@ -154,15 +154,14 @@ Combine with `Field` for labelled toggle groups:
 
 ```html
 <Field orientation="horizontal">
-  <FieldTitle id="theme-label">Theme</FieldTitle>
-  <ToggleGroup aria-labelledby="theme-label" spacing="2">
-    <ToggleGroupItem value="light">Light</ToggleGroupItem>
-    <ToggleGroupItem value="dark">Dark</ToggleGroupItem>
-    <ToggleGroupItem value="system">System</ToggleGroupItem>
-  </ToggleGroup>
+    <FieldTitle id="theme-label">Theme</FieldTitle>
+    <ToggleGroup aria-labelledby="theme-label" spacing="2">
+        <ToggleGroupItem value="light">Light</ToggleGroupItem>
+        <ToggleGroupItem value="dark">Dark</ToggleGroupItem>
+        <ToggleGroupItem value="system">System</ToggleGroupItem>
+    </ToggleGroup>
 </Field>
 ```
-
 
 ---
 
@@ -171,16 +170,16 @@ Combine with `Field` for labelled toggle groups:
 Use `FieldSet` + `FieldLegend` for related checkboxes, radios, or switches — not `div` with a heading:
 
 ```html
-<FieldSet>
-  <FieldLegend variant="label">Preferences</FieldLegend>
-  <FieldDescription>Select all that apply.</FieldDescription>
-  <FieldGroup class="gap-3">
-    <Field orientation="horizontal">
-      <Checkbox id="dark" />
-      <FieldLabel for="dark" class="font-normal">Dark mode</FieldLabel>
-    </Field>
-  </FieldGroup>
-</FieldSet>
+<fieldset>
+    <FieldLegend variant="label">Preferences</FieldLegend>
+    <FieldDescription>Select all that apply.</FieldDescription>
+    <FieldGroup class="gap-3">
+        <Field orientation="horizontal">
+            <Checkbox id="dark" />
+            <FieldLabel for="dark" class="font-normal">Dark mode</FieldLabel>
+        </Field>
+    </FieldGroup>
+</fieldset>
 ```
 
 ---
@@ -192,15 +191,15 @@ Both attributes are needed — `data-invalid`/`data-disabled` styles the field (
 ```html
 <!-- Invalid. -->
 <Field data-invalid>
-  <FieldLabel for="email">Email</FieldLabel>
-  <Input id="email" aria-invalid />
-  <FieldDescription>Invalid email address.</FieldDescription>
+    <FieldLabel for="email">Email</FieldLabel>
+    <input id="email" aria-invalid />
+    <FieldDescription>Invalid email address.</FieldDescription>
 </Field>
 
 <!-- Disabled. -->
 <Field data-disabled>
-  <FieldLabel for="email">Email</FieldLabel>
-  <Input id="email" disabled />
+    <FieldLabel for="email">Email</FieldLabel>
+    <input id="email" disabled />
 </Field>
 ```
 

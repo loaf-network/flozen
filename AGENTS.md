@@ -3,9 +3,11 @@
 本文件为 AI Agent 提供项目操作手册与约束清单，确保 Agent 行为可控、可复现。
 
 ## 项目概述
+
 Flozen 是基于 Tauri v2 + Vue 3 的跨平台音乐播放器，适配 Windows、MacOS、Android 与 iOS 等市场主流操作系统，不包括由 HUAWEI 开发的 HarmonyOS NEXT 系统。
 
 ### 开发特点
+
 项目使用模块化开发方式，通过拆分成不同的模块来实现各种功能，给予用户高度可玩性：
 
 - 多音乐平台支持，通过模块化的方式，支持网易云音乐、酷狗音乐等音乐平台（把单个音乐平台称为provider）
@@ -20,11 +22,9 @@ Flozen 是基于 Tauri v2 + Vue 3 的跨平台音乐播放器，适配 Windows�
 - 程序在线更新（通过 GitHub）
 - 歌曲列表展示
 
-
 ### 项目信息
 
 - GitHub 仓库: `https://github.com/loaf-network/flozen`
-
 
 ## 目录结构
 
@@ -63,12 +63,13 @@ Flozen 是基于 Tauri v2 + Vue 3 的跨平台音乐播放器，适配 Windows�
 ```bash
 npm run dev &rem 启动 Vite 开发服务器（端口 1420)
 npm run build &rem 类型检查 + 构建
+npm run lint &rem ESLint 纠错 + Prettier 格式化（4 空格缩进）
 npm run tauri &rem 转发到 Tauri CLI（如 `tauri dev`）
 ```
 
 ## 提示词
 
-- 读取 `prompts/MEMORY.md` 并遵循该记忆文档 
+- 读取 `prompts/MEMORY.md` 并遵循该记忆文档
 
 ## 记忆协议
 
@@ -97,6 +98,7 @@ npm run tauri &rem 转发到 Tauri CLI（如 `tauri dev`）
 
 ## 编码规范
 
+- **每次包含代码修改的对话结束后，必须执行 `npm run lint`** 以确保代码通过 ESLint 纠错和 Prettier 格式化。
 - 不要在 `App.vue` 里写过多内容。
 - 编写组件前，检查是否有类似组件可以重复使用。编写组件时，若组件无法被重复利用（仅在单页面使用），需在 `src/components/` 建立该页面的文件夹，方便归纳整洁；若能被重复使用，请放置在 `src/components/` 目录下。
 

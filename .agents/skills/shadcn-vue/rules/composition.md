@@ -26,8 +26,8 @@ Never render items directly inside the content container.
 
 ```html
 <SelectContent>
-  <SelectItem value="apple">Apple</SelectItem>
-  <SelectItem value="banana">Banana</SelectItem>
+    <SelectItem value="apple">Apple</SelectItem>
+    <SelectItem value="banana">Banana</SelectItem>
 </SelectContent>
 ```
 
@@ -35,22 +35,22 @@ Never render items directly inside the content container.
 
 ```html
 <SelectContent>
-  <SelectGroup>
-    <SelectItem value="apple">Apple</SelectItem>
-    <SelectItem value="banana">Banana</SelectItem>
-  </SelectGroup>
+    <SelectGroup>
+        <SelectItem value="apple">Apple</SelectItem>
+        <SelectItem value="banana">Banana</SelectItem>
+    </SelectGroup>
 </SelectContent>
 ```
 
 This applies to all group-based components:
 
-| Item | Group |
-|------|-------|
-| `SelectItem`, `SelectLabel` | `SelectGroup` |
+| Item                                                       | Group               |
+| ---------------------------------------------------------- | ------------------- |
+| `SelectItem`, `SelectLabel`                                | `SelectGroup`       |
 | `DropdownMenuItem`, `DropdownMenuLabel`, `DropdownMenuSub` | `DropdownMenuGroup` |
-| `MenubarItem` | `MenubarGroup` |
-| `ContextMenuItem` | `ContextMenuGroup` |
-| `CommandItem` | `CommandGroup` |
+| `MenubarItem`                                              | `MenubarGroup`      |
+| `ContextMenuItem`                                          | `ContextMenuGroup`  |
+| `CommandItem`                                              | `CommandGroup`      |
 
 ---
 
@@ -58,8 +58,8 @@ This applies to all group-based components:
 
 ```html
 <Alert>
-  <AlertTitle>Warning</AlertTitle>
-  <AlertDescription>Something needs attention.</AlertDescription>
+    <AlertTitle>Warning</AlertTitle>
+    <AlertDescription>Something needs attention.</AlertDescription>
 </Alert>
 ```
 
@@ -69,14 +69,14 @@ This applies to all group-based components:
 
 ```html
 <Empty>
-  <EmptyHeader>
-    <EmptyMedia variant="icon"><FolderIcon /></EmptyMedia>
-    <EmptyTitle>No projects yet</EmptyTitle>
-    <EmptyDescription>Get started by creating a new project.</EmptyDescription>
-  </EmptyHeader>
-  <EmptyContent>
-    <Button>Create Project</Button>
-  </EmptyContent>
+    <EmptyHeader>
+        <EmptyMedia variant="icon"><FolderIcon /></EmptyMedia>
+        <EmptyTitle>No projects yet</EmptyTitle>
+        <EmptyDescription>Get started by creating a new project.</EmptyDescription>
+    </EmptyHeader>
+    <EmptyContent>
+        <button>Create Project</button>
+    </EmptyContent>
 </Empty>
 ```
 
@@ -100,14 +100,14 @@ toast("File deleted.", {
 
 ## Choosing between overlay components
 
-| Use case | Component |
-|----------|-----------|
-| Focused task that requires input | `Dialog` |
-| Destructive action confirmation | `AlertDialog` |
-| Side panel with details or filters | `Sheet` |
-| Mobile-first bottom panel | `Drawer` |
-| Quick info on hover | `HoverCard` |
-| Small contextual content on click | `Popover` |
+| Use case                           | Component     |
+| ---------------------------------- | ------------- |
+| Focused task that requires input   | `Dialog`      |
+| Destructive action confirmation    | `AlertDialog` |
+| Side panel with details or filters | `Sheet`       |
+| Mobile-first bottom panel          | `Drawer`      |
+| Quick info on hover                | `HoverCard`   |
+| Small contextual content on click  | `Popover`     |
 
 ---
 
@@ -133,14 +133,14 @@ Use full composition — don't dump everything into `CardContent`:
 
 ```html
 <Card>
-  <CardHeader>
-    <CardTitle>Team Members</CardTitle>
-    <CardDescription>Manage your team.</CardDescription>
-  </CardHeader>
-  <CardContent>...</CardContent>
-  <CardFooter>
-    <Button>Invite</Button>
-  </CardFooter>
+    <CardHeader>
+        <CardTitle>Team Members</CardTitle>
+        <CardDescription>Manage your team.</CardDescription>
+    </CardHeader>
+    <CardContent>...</CardContent>
+    <CardFooter>
+        <button>Invite</button>
+    </CardFooter>
 </Card>
 ```
 
@@ -151,10 +151,10 @@ Use full composition — don't dump everything into `CardContent`:
 Compose with `Spinner` + `data-icon` + `disabled`:
 
 ```html
-<Button disabled>
-  <Spinner data-icon="inline-start" />
-  Saving...
-</Button>
+<button disabled>
+    <Spinner data-icon="inline-start" />
+    Saving...
+</button>
 ```
 
 ---
@@ -165,11 +165,11 @@ Never render `TabsTrigger` directly inside `Tabs` — always wrap in `TabsList`:
 
 ```html
 <Tabs default-value="account">
-  <TabsList>
-    <TabsTrigger value="account">Account</TabsTrigger>
-    <TabsTrigger value="password">Password</TabsTrigger>
-  </TabsList>
-  <TabsContent value="account">...</TabsContent>
+    <TabsList>
+        <TabsTrigger value="account">Account</TabsTrigger>
+        <TabsTrigger value="password">Password</TabsTrigger>
+    </TabsList>
+    <TabsContent value="account">...</TabsContent>
 </Tabs>
 ```
 
@@ -181,8 +181,8 @@ Always include `AvatarFallback` for when the image fails to load:
 
 ```html
 <Avatar>
-  <AvatarImage src="/avatar.png" alt="User" />
-  <AvatarFallback>JD</AvatarFallback>
+    <AvatarImage src="/avatar.png" alt="User" />
+    <AvatarFallback>JD</AvatarFallback>
 </Avatar>
 ```
 
@@ -190,8 +190,8 @@ Always include `AvatarFallback` for when the image fails to load:
 
 ## Use existing components instead of custom markup
 
-| Instead of | Use |
-|---|---|
-| `<hr>` or `<div class="border-t">` | `<Separator />` |
+| Instead of                                     | Use                              |
+| ---------------------------------------------- | -------------------------------- |
+| `<hr>` or `<div class="border-t">`             | `<Separator />`                  |
 | `<div class="animate-pulse">` with styled divs | `<Skeleton class="h-4 w-3/4" />` |
-| `<span class="rounded-full bg-green-100 ...">` | `<Badge variant="secondary">` |
+| `<span class="rounded-full bg-green-100 ...">` | `<Badge variant="secondary">`    |
