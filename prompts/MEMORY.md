@@ -7,40 +7,76 @@
 以下文档位于 `prompts/` 目录下，按主题分类存储具体记忆：
 
 - `USER_INTERFACE.md` — UI 界面
-- `NCM_API.md` — 网易云音乐 API 文档（GitHub: NeteaseCloudMusicApiEnhanced/api-enhanced）
+- `NCM_API.md` — 网易云音乐 API 文档
 
 ## 通用规则
 
 - 符合精致、高级与流畅的审美特点，多使用暗色（黑白，形成强烈对比），不要使用彩色渐变（AI 味很浓）。
-- 在保证运行流畅、不卡顿与高帧数的前提下，追求界面质感。此原则贯穿整个程序（前端 UI、后端逻辑、交互体验等），而非仅限于界面。
+- 在保证运行流畅、不卡顿与高帧数的前提下，追求界面质感。
 - UI 开发尽量采用 `Tailwind CSS v4` + `shadcn-vue v2` 的已有解决方案。
-- 非用户要求下，图标统一使用 `@lucide/vue`，不要手写 SVG。
-- 界面尽量简洁，代码尽量精简，不要太复杂。
-- 不要抄其他产品的设计，保持自己的风格。
-- 全部使用 shadcn-vue 组件，不要写自定义样式（除非布局需要），颜色全部使用语义令牌。
+- 图标统一使用 `@lucide/vue`，不要手写 SVG。
+- 界面尽量简洁，代码尽量精简。
+- 全部使用 shadcn-vue 组件，颜色全部使用语义令牌。
+- 不要在 `App.vue` 里写过多内容。
+- 编写组件前检查是否有类似组件可复用。仅单页面使用的组件放在 `src/components/<page>/` 下。
+- 参考 Apple 设计风格：简洁、留白、层次分明、微妙的动画。
 
 ## 经验积累
 
 - shadcn-vue 组件安装: `npx shadcn-vue@latest add <组件名> --yes`
-- 已安装组件: button, card, checkbox, radio-group, badge, separator, label, switch
-- shadcn-vue 规范: 使用语义色令牌、`cn()` 条件类名、`gap-*` 代替 `space-*`、`size-*` 代替 `w-* h-*`
-- vue-router 使用 v4 版本（v5 需要 vite ^7+），安装: `npm install vue-router@4 --legacy-peer-deps`
-- 路由使用 `createWebHashHistory`（Tauri 适配更好）
-- 项目目录结构: `src/router/` (路由), `src/pages/` (页面), `src/components/` (组件)
-- Tauri v2 splashscreen 参考: https://tauri.app/learn/splashscreen/（后续对接）
+- 已安装: button, card, checkbox, radio-group, badge, separator, label, switch, avatar
+- vue-router v4，安装: `npm install vue-router@4 --legacy-peer-deps`
+- Tauri Store: `@tauri-apps/plugin-store` (npm) + `tauri-plugin-store` (Rust)
+- NCM API: `VITE_API_NCM_BASE` 环境变量
+- NCM 二维码登录: `/login/qr/key` → `/login/qr/create` → 轮询 `/login/qr/check`
+- NCM 用户信息: `/user/account?cookie=xxx`
+- Tauri 项目 JSON/Rust 文件不能有 BOM
+- Card 组件自带 `py-6 gap-6`，做列表容器时需 `py-0 gap-0 overflow-hidden` 覆盖
+- 设置页列表模式: Card + Separator + 等高按钮行，间距统一 px-4 py-3.5
+- PowerShell 不支持 `head`，用 `Select-Object -First N`
 
 ## 工作总结
 
-### 落地页 (Landing.vue) — 全屏滚动分段
-- **状态**: 已完成，全部使用 shadcn-vue 组件 + 语义令牌
-- **文件**: `src/pages/Landing.vue`, `src/components/SplashScreen.vue`, `src/router/index.ts`
-- **路由**: `/` → SplashScreen (2s 后跳转), `/landing` → Landing
-- **布局**: 全屏 scroll-snap 分段，每段占一屏，底部有向下滚动提示
-- **3 个段落**:
-  1. 项目介绍 — Music 图标 + 标题 + 3 个 Badge 特性标签
-  2. 选择音乐平台并登录 — Card 内 4 个 Button 平台卡片 + 登录按钮
-  3. 隐私与数据 — Card 内 Checkbox 同意隐私 + Switch Clarity + 启动按钮
-- **图标**: `@lucide/vue` (Music, ChevronDown, Globe, Headphones, ListMusic, Radio, Check)
-- **shadcn-vue 组件**: Button, Card, Badge, Separator, Checkbox, Switch, Label
-- **样式**: 全部使用语义令牌 (bg-background, text-foreground, text-muted-foreground, bg-card, border-border, text-primary, bg-primary/5)
-- **待办**: 登录功能实现、Tauri splashscreen 对接、保存设置逻辑
+### 项目结构 (模块化)
+```
+src/
+├── router/index.ts
+├── pages/
+│   ├── Landing.vue              # 首次引导 (介绍→主题→隐私)
+│   ├── Home.vue                 # 主页 (欢迎+快速操作+最近播放)
+│   ├── Settings.vue             # 设置入口 (列表)
+│   └── settings/
+│       ├── Profile.vue          # Loaf Network 账号 (Apple ID 风格)
+│       ├── Account.vue          # 第三方平台账号 (NCM 二维码登录)
+│       ├── Appearance.vue       # 外观 (主题切换)
+│       ├── Privacy.vue          # 隐私 (政策 + Clarity)
+│       └── About.vue            # 关于 (版本+链接+依赖+版权)
+├── components/
+│   ├── SplashScreen.vue         # 启动过渡 (品牌感+动画)
+│   └── AppLayout.vue            # 侧边栏+内容区
+├── lib/
+│   ├── api.ts                   # NCM API 封装
+│   └── store.ts                 # Tauri Store
+```
+
+### 路由
+- `/` → Splash (检查 onboarded → /landing 或 /app)
+- `/landing` → 3 段引导 (Apple 风格)
+- `/app` → AppLayout (macOS Finder 风格侧边栏)
+  - `/app` → Home (欢迎+快速操作+最近播放)
+  - `/app/settings` → Settings 列表
+  - `/app/settings/profile` → Loaf Network 账号
+  - `/app/settings/account` → 第三方平台账号
+  - `/app/settings/appearance` → 外观
+  - `/app/settings/privacy` → 隐私
+  - `/app/settings/about` → 关于
+
+### 设计风格 (Apple 风格)
+- Landing: 大标题 text-7xl，毛玻璃 Logo 容器，半透明 Badge
+- SplashScreen: 分层 stagger 动画，渐变装饰线
+- Settings: Card 容器 + Separator 分隔，图标 40px 圆角方块
+- Home: 欢迎语 + 快速操作卡片 + 最近播放占位
+- 侧边栏: macOS Finder 风格，子路由高亮支持
+
+### Store 字段
+- `onboarded`, `theme`, `ncmCookie`, `ncmUser` (UserProfile), `clarity`
