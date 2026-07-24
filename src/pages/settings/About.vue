@@ -2,7 +2,6 @@
 import { useRouter } from "vue-router"
 import { ArrowLeft, ExternalLink, Globe, Music, MessageSquare, Star } from "@lucide/vue"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 
 const router = useRouter()
 const version = "0.1.0"
@@ -28,11 +27,28 @@ const links = [
             <h1 class="text-xl font-bold tracking-tight">关于</h1>
         </div>
 
-        <Card class="flex flex-col items-center gap-3 p-8 mb-6">
-            <Music :size="40" :stroke-width="1.2" class="text-muted-foreground" />
-            <h2 class="text-lg font-bold tracking-tight">Flozen 音乐播放器</h2>
-            <p class="text-xs text-muted-foreground">版本 {{ version }}</p>
-        </Card>
+        <div class="about-header mb-6 px-1">
+            <div class="flex items-center gap-4">
+                <div
+                    class="size-16 rounded-2xl bg-white/15 flex items-center justify-center flex-shrink-0"
+                >
+                    <Music :size="28" :stroke-width="1.5" class="text-white" />
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h2 class="text-lg font-bold tracking-tight text-white">Flozen 音乐播放器</h2>
+                    <p class="text-xs text-white/60 mt-0.5">
+                        v{{ version }} · by
+                        <a
+                            href="https://loaf.network/"
+                            target="_blank"
+                            rel="noopener"
+                            class="text-white/80 hover:text-white hover:underline"
+                            >Loaf Network</a
+                        >
+                    </p>
+                </div>
+            </div>
+        </div>
 
         <div class="flex flex-col gap-2 mb-6">
             <a
@@ -54,3 +70,11 @@ const links = [
         </div>
     </div>
 </template>
+
+<style scoped>
+.about-header {
+    border-radius: 16px;
+    padding: 20px;
+    background: radial-gradient(circle at 0% 0%, #62c4fc 0%, #2222f4 100%);
+}
+</style>

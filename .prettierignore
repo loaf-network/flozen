@@ -3,3 +3,4 @@ src-tauri
 node_modules
 .agents
 prompts
+src/components/ui/

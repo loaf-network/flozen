@@ -56,4 +56,30 @@ const router = createRouter({
     ],
 })
 
+function getDepth(path: string) {
+    return path.split("/").filter(Boolean).length
+}
+
+router.beforeEach((to) => {
+    const fromPath = router.currentRoute.value.path
+    const toParent = to.path.split("/").slice(0, 2).join("/")
+    const fromParent = fromPath.split("/").slice(0, 2).join("/")
+
+    // 同一父级下切换（如 Home ↔ Settings）用垂直过渡
+    if (toParent === fromParent && toParent !== "") {
+        to.meta.transition = "fade-vertical"
+        return
+    }
+
+    const toDepth = getDepth(to.path)
+    const fromDepth = getDepth(fromPath)
+    if (toDepth > fromDepth) {
+        to.meta.transition = "slide-left"
+    } else if (toDepth < fromDepth) {
+        to.meta.transition = "slide-right"
+    } else {
+        to.meta.transition = "fade"
+    }
+})
+
 export default router

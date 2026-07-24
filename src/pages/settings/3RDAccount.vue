@@ -12,14 +12,7 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog"
-import {
-    getQrKey,
-    createQr,
-    checkQr,
-    getUserAccount,
-    logout as ncmLogout,
-    type UserProfile,
-} from "@/lib/api"
+import { getQrKey, createQr, checkQr, getNcmAccount, ncmLogout, type UserProfile } from "@/lib/api"
 import { loadConfig, saveConfig } from "@/lib/store"
 
 const router = useRouter()
@@ -42,7 +35,7 @@ onUnmounted(cleanup)
 
 async function fetchUser(cookie: string) {
     try {
-        const res = await getUserAccount(cookie)
+        const res = await getNcmAccount(cookie)
         if (res.code === 200 && res.profile) {
             user.value = res.profile
             await saveConfig("ncmProfile", res.profile)

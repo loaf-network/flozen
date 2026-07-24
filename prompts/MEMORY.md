@@ -17,6 +17,7 @@
 - 图标统一使用 `@lucide/vue`，不要手写 SVG。
 - 界面尽量简洁，代码尽量精简。
 - 全部使用 shadcn-vue 组件，颜色全部使用语义令牌。
+- **提示通知统一使用 sonner**（`vue-sonner` + shadcn-vue Toaster），不用 console.error/alert。`<Toaster />` 放在 `App.vue`。
 - 不要在 `App.vue` 里写过多内容。
 - 编写组件前检查是否有类似组件可复用。仅单页面使用的组件放在 `src/components/<page>/` 下。
 - 参考 Apple 设计风格：简洁、留白、层次分明、微妙的动画。
@@ -24,17 +25,22 @@
 ## 经验积累
 
 - shadcn-vue 组件安装: `npx shadcn-vue@latest add <组件名> --yes`
-- 已安装: button, card, checkbox, radio-group, badge, separator, label, switch, avatar
+- 已安装: button, card, checkbox, radio-group, badge, separator, label, switch, avatar, sonner, input
 - vue-router v4，安装: `npm install vue-router@4 --legacy-peer-deps`
 - Tauri Store: `@tauri-apps/plugin-store` (npm) + `tauri-plugin-store` (Rust)
 - NCM API: `VITE_API_NCM_BASE` 环境变量
+- NCM realIP: 所有请求自动附加 `realIP` 参数，IP 通过 `https://api.ipify.org` 获取并缓存在 Store
 - NCM 二维码登录: `/login/qr/key` → `/login/qr/create` → 轮询 `/login/qr/check`
-- NCM 用户信息: `/user/account?cookie=xxx`
+- NCM 用户信息: `getNcmAccount(cookie)`
+- NCM 退出登录: `ncmLogout()`（调用 `/logout` 接口）
+- NCM 搜索: `ncmSearch(keywords)` / `ncmSearchSuggest(keywords)` / `ncmSearchHot()` / `ncmSongUrl(id)`
+- API 已模块化: `src/lib/api/request.ts`（通用 POST）+ `ncm.ts`（NCM Provider）+ `index.ts`（统一导出）
 - Tauri 项目 JSON/Rust 文件不能有 BOM
 - Card 组件自带 `py-6 gap-6`，做列表容器时需 `py-0 gap-0 overflow-hidden` 覆盖
 - 设置页列表模式: Card + Separator + 等高按钮行，间距统一 px-4 py-3.5
 - PowerShell 不支持 `head`，用 `Select-Object -First N`
 - ESLint + Prettier: `eslint.config.js` (flat config) + `.prettierrc` (4 空格缩进)，`npm run lint` 纠错+格式化
+- 页面过渡动画: `router.beforeEach` 按路径深度设 `meta.transition`（slide-left/right/fade），App.vue + AppLayout.vue 用 `<Transition :name>` 包裹 `<RouterView v-slot>`
 
 ## 工作总结
 
@@ -47,17 +53,16 @@ src/
 │   ├── Landing.vue              # 首次引导 (介绍→主题→隐私)
 │   ├── Home.vue                 # 主页 (欢迎+快速操作+最近播放)
 │   ├── Settings.vue             # 设置入口 (列表)
-│   └── settings/
-│       ├── Profile.vue          # Loaf Network 账号 (Apple ID 风格)
-│       ├── Account.vue          # 第三方平台账号 (NCM 二维码登录)
-│       ├── Appearance.vue       # 外观 (主题切换)
-│       ├── Privacy.vue          # 隐私 (政策 + Clarity)
-│       └── About.vue            # 关于 (版本+链接+依赖+版权)
+│   └── settings/                # (LNProfile, 3RDAccount, Appearance, Privacy, About)
 ├── components/
 │   ├── SplashScreen.vue         # 启动过渡 (品牌感+动画)
-│   └── AppLayout.vue            # 侧边栏+内容区
+│   ├── AppLayout.vue            # 侧边栏+内容区
+│   └── ui/                      # shadcn-vue 组件
 ├── lib/
-│   ├── api.ts                   # NCM API 封装
+│   ├── api/                     # API 模块化
+│   │   ├── request.ts           # 通用 POST + timestamp
+│   │   ├── ncm.ts               # NCM Provider
+│   │   └── index.ts             # 统一导出 + Song 类型
 │   └── store.ts                 # Tauri Store
 ```
 
@@ -84,4 +89,8 @@ src/
 
 ### Store 字段
 
-- `onboarded`, `theme`, `ncmCookie`, `ncmProfile` (UserProfile), `clarity`
+- `onboarded`, `theme`, `ncmCookie`, `ncmProfile` (UserProfile), `clarity`, `realIP`（缓存用户公网 IP，用于 NCM API 请求）
+
+### 已知问题
+
+- ...

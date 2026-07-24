@@ -113,6 +113,62 @@
     --sidebar-ring: oklch(0.552 0.016 285.938);
 }
 
+/* ─── 页面过渡动画 ─── */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+.fade-vertical-enter-active,
+.fade-vertical-leave-active {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.fade-vertical-enter-from {
+    opacity: 0;
+    transform: translateY(12px);
+}
+.fade-vertical-leave-to {
+    opacity: 0;
+    transform: translateY(-12px);
+}
+
+.slide-left-enter-active,
+.slide-left-leave-active {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.slide-left-enter-from {
+    opacity: 0;
+    transform: translateX(24px);
+}
+.slide-left-leave-to {
+    opacity: 0;
+    transform: translateX(-24px);
+}
+
+.slide-right-enter-active,
+.slide-right-leave-active {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.slide-right-enter-from {
+    opacity: 0;
+    transform: translateX(-24px);
+}
+.slide-right-leave-to {
+    opacity: 0;
+    transform: translateX(24px);
+}
+
+.no-scrollbar {
+    scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
 @layer base {
     * {
         @apply border-border outline-ring/50;

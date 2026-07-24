@@ -7,6 +7,7 @@ const DEFAULTS = {
     ncmCookie: "",
     ncmProfile: null as UserProfile | null,
     clarity: false,
+    realIP: "",
 }
 
 type Config = typeof DEFAULTS

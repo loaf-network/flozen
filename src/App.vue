@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from "vue"
+import { Toaster } from "@/components/ui/sonner"
+import "vue-sonner/style.css"
 
 const STORAGE_KEY = "flozen-theme"
 
@@ -24,5 +26,10 @@ onMounted(() => {
 </script>
 
 <template>
-    <router-view />
+    <router-view v-slot="{ Component }">
+        <Transition name="fade" mode="out-in">
+            <component :is="Component" />
+        </Transition>
+    </router-view>
+    <Toaster />
 </template>

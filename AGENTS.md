@@ -69,7 +69,7 @@ npm run tauri &rem 转发到 Tauri CLI（如 `tauri dev`）
 
 ## 提示词
 
-- 读取 `prompts/MEMORY.md` 并遵循该记忆文档
+- 在开始对话前，先读取 `prompts/MEMORY.md` 并遵循该记忆文档
 
 ## 记忆协议
 
@@ -79,7 +79,7 @@ npm run tauri &rem 转发到 Tauri CLI（如 `tauri dev`）
 2. 将无法归类的结论追加至 `prompts/MEMORY.md`，按优先级排序。
 3. 将能够归类的结论追加至 `prompts` 目录下相关文档；若没有该类文档则创建（文档名采用驼峰式命名），同时更新 `prompts/MEMORY.md` 内的指代部分，确保该类文档能被正常加载。
 
-当你进行回复后，将你已经完成了的工作和已知的问题概括后写进 `prompts/MEMORY.md` 的对应部分，确保你的下一位工作者能在较短时间内，使用较少的 token 便能详细了解当前情况。
+当你进行回复后，将你已经完成了的工作和已知的问题或错误，在概括后写进 `prompts/MEMORY.md` 的对应部分，确保你的下一位工作者能在较短时间内，使用较少的 token 便能详细了解当前情况。
 
 ## 作用域
 

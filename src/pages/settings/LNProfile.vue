@@ -17,6 +17,18 @@ const router = useRouter()
             <h1 class="text-xl font-bold tracking-tight">Loaf Network 账号</h1>
         </div>
 
+        <div class="mb-6">
+            <a
+                href="https://loaf.network"
+                target="_blank"
+                rel="noopener"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl border border-border hover:bg-accent/50 transition-colors"
+            >
+                <ExternalLink :size="16" class="text-muted-foreground" />
+                <span class="text-sm">访问 loaf.network</span>
+            </a>
+        </div>
+
         <Card class="py-0 gap-0 overflow-hidden">
             <div class="flex items-center gap-4 px-4 py-4">
                 <div
@@ -37,17 +49,5 @@ const router = useRouter()
                 </p>
             </div>
         </Card>
-
-        <div class="mt-4">
-            <a
-                href="https://loaf.network"
-                target="_blank"
-                rel="noopener"
-                class="flex items-center gap-3 px-4 py-3 rounded-xl border border-border hover:bg-accent/50 transition-colors"
-            >
-                <ExternalLink :size="16" class="text-muted-foreground" />
-                <span class="text-sm">访问 loaf.network</span>
-            </a>
-        </div>
     </div>
 </template>

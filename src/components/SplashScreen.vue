@@ -2,27 +2,37 @@
 import { onMounted } from "vue"
 import { useRouter } from "vue-router"
 import { Music } from "@lucide/vue"
+import { toast } from "vue-sonner"
 import { loadConfig, saveConfig } from "@/lib/store"
-import { getUserAccount } from "@/lib/api"
+import { getNcmAccount } from "@/lib/api"
 
 const router = useRouter()
+
+function navigate(to: string) {
+    router.replace(to)
+}
+
 onMounted(async () => {
     const config = await loadConfig()
 
-    // 启动时如果有 cookie，静默刷新 profile
+    // 有 cookie 时先刷新 profile，最多等 3 秒
     if (config.ncmCookie) {
-        getUserAccount(config.ncmCookie)
-            .then(async (res) => {
-                if (res.code === 200 && res.profile) {
-                    await saveConfig("ncmProfile", res.profile)
-                }
-            })
-            .catch(() => {})
+        try {
+            const res = await Promise.race([
+                getNcmAccount(config.ncmCookie),
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error("timeout")), 3000),
+                ),
+            ])
+            if (res.code === 200 && res.profile) {
+                await saveConfig("ncmProfile", res.profile)
+            }
+        } catch {
+            toast.error("网络连接失败，已跳过账号同步")
+        }
     }
 
-    setTimeout(() => {
-        router.replace(config.onboarded ? "/app" : "/landing")
-    }, 2200)
+    navigate(config.onboarded ? "/app" : "/landing")
 })
 </script>
 
