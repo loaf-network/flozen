@@ -2,11 +2,24 @@
 import { onMounted } from "vue"
 import { useRouter } from "vue-router"
 import { Music } from "@lucide/vue"
-import { loadConfig } from "@/lib/store"
+import { loadConfig, saveConfig } from "@/lib/store"
+import { getUserAccount } from "@/lib/api"
 
 const router = useRouter()
 onMounted(async () => {
     const config = await loadConfig()
+
+    // 启动时如果有 cookie，静默刷新 profile
+    if (config.ncmCookie) {
+        getUserAccount(config.ncmCookie)
+            .then(async (res) => {
+                if (res.code === 200 && res.profile) {
+                    await saveConfig("ncmProfile", res.profile)
+                }
+            })
+            .catch(() => {})
+    }
+
     setTimeout(() => {
         router.replace(config.onboarded ? "/app" : "/landing")
     }, 2200)

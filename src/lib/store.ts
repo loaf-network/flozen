@@ -5,7 +5,7 @@ const DEFAULTS = {
     onboarded: false,
     theme: "auto" as "dark" | "light" | "auto",
     ncmCookie: "",
-    ncmUser: null as UserProfile | null,
+    ncmProfile: null as UserProfile | null,
     clarity: false,
 }
 

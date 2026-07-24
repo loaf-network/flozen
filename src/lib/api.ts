@@ -36,23 +36,37 @@ export interface UserAccountRes {
 }
 
 export async function getQrKey() {
-    const r = await fetch(`${BASE}/login/qr/key?timestamp=${ts()}`)
+    const r = await fetch(`${BASE}/login/qr/key?timestamp=${ts()}`, { method: "POST" })
     return (await r.json()) as QrKeyRes
 }
 
 export async function createQr(key: string) {
-    const r = await fetch(`${BASE}/login/qr/create?key=${key}&qrimg=true&timestamp=${ts()}`)
+    const r = await fetch(`${BASE}/login/qr/create?timestamp=${ts()}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ key, qrimg: "true" }),
+    })
     return (await r.json()) as QrCreateRes
 }
 
 export async function checkQr(key: string) {
-    const r = await fetch(`${BASE}/login/qr/check?key=${key}&timestamp=${ts()}`)
+    const r = await fetch(`${BASE}/login/qr/check?timestamp=${ts()}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ key }),
+    })
     return (await r.json()) as QrCheckRes
 }
 
+export async function logout() {
+    await fetch(`${BASE}/logout?timestamp=${ts()}`, { method: "POST" })
+}
+
 export async function getUserAccount(cookie: string) {
-    const r = await fetch(
-        `${BASE}/user/account?cookie=${encodeURIComponent(cookie)}&timestamp=${ts()}`,
-    )
+    const r = await fetch(`${BASE}/user/account?timestamp=${ts()}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ cookie }),
+    })
     return (await r.json()) as UserAccountRes
 }

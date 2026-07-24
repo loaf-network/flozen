@@ -12,7 +12,14 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog"
-import { getQrKey, createQr, checkQr, getUserAccount, type UserProfile } from "@/lib/api"
+import {
+    getQrKey,
+    createQr,
+    checkQr,
+    getUserAccount,
+    logout as ncmLogout,
+    type UserProfile,
+} from "@/lib/api"
 import { loadConfig, saveConfig } from "@/lib/store"
 
 const router = useRouter()
@@ -27,7 +34,7 @@ let polling: ReturnType<typeof setInterval> | null = null
 onMounted(async () => {
     const config = await loadConfig()
     ncmCookie.value = config.ncmCookie
-    if (config.ncmUser) user.value = config.ncmUser
+    if (config.ncmProfile) user.value = config.ncmProfile
     else if (config.ncmCookie) await fetchUser(config.ncmCookie)
 })
 
@@ -38,7 +45,7 @@ async function fetchUser(cookie: string) {
         const res = await getUserAccount(cookie)
         if (res.code === 200 && res.profile) {
             user.value = res.profile
-            await saveConfig("ncmUser", res.profile)
+            await saveConfig("ncmProfile", res.profile)
         }
     } catch {
         /* ignore */
@@ -95,10 +102,15 @@ async function openQrLogin() {
 }
 
 async function logout() {
+    try {
+        await ncmLogout()
+    } catch {
+        /* ignore */
+    }
     user.value = null
     ncmCookie.value = ""
     await saveConfig("ncmCookie", "")
-    await saveConfig("ncmUser", null)
+    await saveConfig("ncmProfile", null)
 }
 
 function cleanup() {

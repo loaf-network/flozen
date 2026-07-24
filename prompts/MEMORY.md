@@ -84,4 +84,4 @@ src/
 
 ### Store 字段
 
-- `onboarded`, `theme`, `ncmCookie`, `ncmUser` (UserProfile), `clarity`
+- `onboarded`, `theme`, `ncmCookie`, `ncmProfile` (UserProfile), `clarity`
