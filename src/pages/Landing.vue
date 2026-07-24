@@ -73,7 +73,7 @@ async function startApp() {
 
                 <!-- 标题 -->
                 <div class="flex flex-col items-center gap-3">
-                    <h1 class="text-7xl font-bold tracking-tighter text-foreground">Flozen</h1>
+                    <h1 class="text-6xl font-bold tracking-normal text-foreground">Flozen</h1>
                     <p class="text-lg text-muted-foreground tracking-wide">
                         精心打造的跨平台音乐播放器
                     </p>
@@ -93,9 +93,7 @@ async function startApp() {
             <!-- 滚动提示 -->
             <div class="scroll-hint" @click="scrollTo('theme')">
                 <ChevronDown :size="16" class="animate-bounce" />
-                <span class="text-[11px] tracking-widest uppercase text-muted-foreground/60"
-                    >向下滚动</span
-                >
+                <span class="text-[11px] text-muted-foreground/60">向下滚动</span>
             </div>
         </section>
 
@@ -103,7 +101,7 @@ async function startApp() {
         <section class="panel" id="theme">
             <div class="flex flex-col items-center gap-10 w-full max-w-md">
                 <div class="text-center">
-                    <h2 class="text-3xl font-bold tracking-tight text-foreground">选择主题</h2>
+                    <h2 class="text-3xl font-bold tracking-normal text-foreground">选择主题</h2>
                     <p class="text-sm text-muted-foreground mt-2">选择你喜欢的视觉风格</p>
                 </div>
 
@@ -127,9 +125,7 @@ async function startApp() {
 
             <div class="scroll-hint" @click="scrollTo('privacy')">
                 <ChevronDown :size="16" class="animate-bounce" />
-                <span class="text-[11px] tracking-widest uppercase text-muted-foreground/60"
-                    >向下滚动</span
-                >
+                <span class="text-[11px] text-muted-foreground/60">向下滚动</span>
             </div>
         </section>
 
@@ -137,7 +133,7 @@ async function startApp() {
         <section class="panel" id="privacy">
             <div class="flex flex-col items-center gap-8 w-full max-w-md">
                 <div class="text-center">
-                    <h2 class="text-3xl font-bold tracking-tight text-foreground">隐私与数据</h2>
+                    <h2 class="text-3xl font-bold tracking-normal text-foreground">隐私与数据</h2>
                     <p class="text-sm text-muted-foreground mt-2">请阅读以下条款并做出你的选择</p>
                 </div>
 
@@ -191,19 +187,19 @@ async function startApp() {
 
 <style scoped>
 .landing {
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     overflow-y: scroll;
     scroll-snap-type: y mandatory;
-    background: #0a0a0a;
+    background: #0d0c0b;
 }
 .landing::-webkit-scrollbar {
     display: none;
 }
 
 .panel {
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     scroll-snap-align: start;
     display: flex;
     flex-direction: column;
@@ -226,7 +222,7 @@ async function startApp() {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.06) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(220, 80, 60, 0.12) 0%, transparent 70%);
 }
 .logo-ring {
     width: 80px;
@@ -242,8 +238,8 @@ async function startApp() {
 
 /* ─── Badge ─── */
 .badge-feature {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(200, 60, 40, 0.08);
+    border: 1px solid rgba(200, 60, 40, 0.12);
     color: var(--muted-foreground);
     font-weight: 500;
     padding: 6px 14px;
@@ -251,7 +247,7 @@ async function startApp() {
     transition: background 0.2s;
 }
 .badge-feature:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(200, 60, 40, 0.14);
 }
 
 /* ─── Theme Card ─── */
@@ -278,7 +274,7 @@ async function startApp() {
     color: var(--foreground);
     box-shadow:
         0 0 0 1px var(--primary),
-        0 0 20px -4px var(--primary);
+        0 0 24px -6px rgba(200, 60, 40, 0.3);
 }
 .theme-card--active:hover {
     background: rgba(255, 255, 255, 0.08);

@@ -22,6 +22,11 @@ const router = createRouter({
                     component: () => import("@/pages/Home.vue"),
                 },
                 {
+                    path: "search",
+                    name: "search",
+                    component: () => import("@/pages/Search.vue"),
+                },
+                {
                     path: "settings",
                     name: "settings",
                     component: () => import("@/pages/Settings.vue"),
@@ -51,7 +56,22 @@ const router = createRouter({
                     name: "settings-about",
                     component: () => import("@/pages/settings/About.vue"),
                 },
+                {
+                    path: "playlists",
+                    name: "playlists",
+                    component: () => import("@/pages/PlaylistDetail.vue"),
+                },
+                {
+                    path: "playlists/:id",
+                    name: "playlist-detail",
+                    component: () => import("@/pages/PlaylistDetail.vue"),
+                },
             ],
+        },
+        {
+            path: "/player",
+            name: "player",
+            component: () => import("@/pages/Player.vue"),
         },
     ],
 })
@@ -64,6 +84,16 @@ router.beforeEach((to) => {
     const fromPath = router.currentRoute.value.path
     const toParent = to.path.split("/").slice(0, 2).join("/")
     const fromParent = fromPath.split("/").slice(0, 2).join("/")
+
+    // Player page: always use player transition
+    if (to.path === "/player") {
+        to.meta.transition = "player"
+        return
+    }
+    if (fromPath === "/player") {
+        to.meta.transition = "fade"
+        return
+    }
 
     // 同一父级下切换（如 Home ↔ Settings）用垂直过渡
     if (toParent === fromParent && toParent !== "") {

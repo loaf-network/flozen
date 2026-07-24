@@ -14,7 +14,7 @@ const router = useRouter()
             <Button variant="ghost" size="icon-sm" @click="router.push('/app/settings')">
                 <ArrowLeft :size="18" />
             </Button>
-            <h1 class="text-xl font-bold tracking-tight">Loaf Network 账号</h1>
+            <h1 class="text-xl font-bold tracking-normal">Loaf Network 账号</h1>
         </div>
 
         <div class="mb-6">

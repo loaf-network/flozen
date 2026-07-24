@@ -120,7 +120,7 @@ function cleanup() {
             <Button variant="ghost" size="icon-sm" @click="router.push('/app/settings')">
                 <ArrowLeft :size="18" />
             </Button>
-            <h1 class="text-xl font-bold tracking-tight">第三方平台账号</h1>
+            <h1 class="text-xl font-bold tracking-normal">第三方平台账号</h1>
         </div>
 
         <Card class="py-0 gap-0 overflow-hidden">
@@ -139,7 +139,7 @@ function cleanup() {
             </div>
             <div v-else class="flex items-center gap-3 px-4 py-3">
                 <div
-                    class="size-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0"
+                    class="size-8 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0"
                 >
                     <Music :size="14" class="text-muted-foreground" />
                 </div>

@@ -24,7 +24,7 @@ const links = [
             <Button variant="ghost" size="icon-sm" @click="router.push('/app/settings')">
                 <ArrowLeft :size="18" />
             </Button>
-            <h1 class="text-xl font-bold tracking-tight">关于</h1>
+            <h1 class="text-xl font-bold tracking-normal">关于</h1>
         </div>
 
         <div class="about-header mb-6 px-1">
@@ -35,7 +35,7 @@ const links = [
                     <Music :size="28" :stroke-width="1.5" class="text-white" />
                 </div>
                 <div class="flex-1 min-w-0">
-                    <h2 class="text-lg font-bold tracking-tight text-white">Flozen 音乐播放器</h2>
+                    <h2 class="text-lg font-bold tracking-normal text-white">Flozen 音乐播放器</h2>
                     <p class="text-xs text-white/60 mt-0.5">
                         v{{ version }} · by
                         <a
@@ -75,6 +75,7 @@ const links = [
 .about-header {
     border-radius: 16px;
     padding: 20px;
-    background: radial-gradient(circle at 0% 0%, #62c4fc 0%, #2222f4 100%);
+    background: var(--about-gradient);
+    border: 1px solid var(--about-border);
 }
 </style>

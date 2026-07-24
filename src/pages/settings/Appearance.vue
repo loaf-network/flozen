@@ -42,22 +42,22 @@ const themes = [
 </script>
 
 <template>
-    <div class="p-6">
-        <div class="flex items-center gap-3 mb-8">
+    <div class="p-6 max-w-xl mx-auto">
+        <div class="flex items-center gap-3 mb-6">
             <Button variant="ghost" size="icon-sm" @click="router.push('/app/settings')">
                 <ArrowLeft :size="18" />
             </Button>
-            <h1 class="text-2xl font-semibold tracking-tight">外观</h1>
+            <h1 class="text-xl font-bold tracking-normal">外观</h1>
         </div>
 
-        <p class="text-xs font-medium text-muted-foreground mb-3 px-1">主题</p>
-        <Card class="py-0 gap-0 overflow-hidden">
+        <p class="text-xs font-medium text-muted-foreground mb-2 px-1">主题</p>
+        <Card class="py-1 gap-1 overflow-hidden">
             <button
                 v-for="t in themes"
                 :key="t.id"
                 :class="[
-                    'flex items-center gap-4 w-full px-4 py-3.5 text-left transition-all duration-200',
-                    mode === t.id ? 'bg-accent/60' : 'hover:bg-accent/30',
+                    'flex items-center gap-4 w-full px-4 py-3.5 text-left transition-all duration-200 rounded-xl',
+                    mode === t.id ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/40',
                 ]"
                 @click="setMode(t.id)"
             >

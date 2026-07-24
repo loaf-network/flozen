@@ -31,7 +31,7 @@ function toggleClarity(v: boolean | "indeterminate") {
             <Button variant="ghost" size="icon-sm" @click="router.push('/app/settings')">
                 <ArrowLeft :size="18" />
             </Button>
-            <h1 class="text-xl font-bold tracking-tight">隐私</h1>
+            <h1 class="text-xl font-bold tracking-normal">隐私</h1>
         </div>
 
         <Card class="py-0 gap-0 overflow-hidden">

@@ -22,6 +22,13 @@ export type {
     SearchSuggestRes,
     SearchHotRes,
     SongUrlRes,
+    LyricRes,
+    SongDetailRes,
+    PlaylistSimple,
+    PlaylistDetailRes,
+    UserPlaylistRes,
+    PlaylistCreateRes,
+    LikeRes,
 } from "./ncm"
 
 export {
@@ -34,4 +41,13 @@ export {
     ncmSearchSuggest,
     ncmSearchHot,
     ncmSongUrl,
+    ncmLyric,
+    ncmSongDetail,
+    ncmLikeSong,
+    ncmUserPlaylist,
+    ncmPlaylistDetail,
+    ncmPlaylistTracks,
+    ncmCreatePlaylist,
+    ncmDeletePlaylist,
+    ncmPlaylistTracksOp,
 } from "./ncm"

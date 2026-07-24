@@ -60,12 +60,12 @@ onMounted(async () => {
 
 <style scoped>
 .splash {
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #0a0a0a;
+    background: #0a0807;
 }
 
 .splash-content {
@@ -81,8 +81,8 @@ onMounted(async () => {
     width: 56px;
     height: 56px;
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(200, 60, 40, 0.12);
+    background: rgba(200, 60, 40, 0.04);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -97,7 +97,7 @@ onMounted(async () => {
     width: 1px;
     height: 28px;
     margin: 20px 0;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02));
+    background: linear-gradient(to bottom, rgba(200, 60, 40, 0.18), transparent);
     animation: line-enter 0.5s ease 0.3s both;
 }
 
@@ -105,7 +105,7 @@ onMounted(async () => {
 .splash-title {
     font-size: 22px;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: normal;
     color: var(--foreground);
     animation: text-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
 }
@@ -114,8 +114,7 @@ onMounted(async () => {
 .splash-sub {
     font-size: 11px;
     font-weight: 500;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    letter-spacing: 0.08em;
     color: var(--muted-foreground);
     opacity: 0.5;
     margin-top: 6px;

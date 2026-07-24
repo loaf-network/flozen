@@ -35,16 +35,27 @@ const items = [
 
 <template>
     <div class="p-6">
-        <h1 class="text-xl font-bold tracking-tight mb-6">设置</h1>
-        <div class="flex flex-col gap-3">
+        <h1 class="text-xl font-bold tracking-normal mb-6">设置</h1>
+        <div class="flex flex-col gap-4">
             <button
-                v-for="item in items"
+                v-for="(item, idx) in items"
                 :key="item.label"
-                class="flex items-center gap-4 p-4 rounded-xl border border-border hover:bg-accent/50 transition-colors text-left w-full"
+                class="flex items-center gap-4 p-4 rounded-2xl border border-border/60 hover:bg-accent/30 hover:border-border transition-all text-left w-full"
                 @click="router.push(item.path)"
             >
                 <div
-                    class="size-10 rounded-xl bg-muted flex items-center justify-center flex-shrink-0"
+                    :class="[
+                        'size-10 rounded-xl flex items-center justify-center flex-shrink-0',
+                        idx === 0
+                            ? 'bg-blue-500/10 text-blue-500'
+                            : idx === 1
+                              ? 'bg-red-500/10 text-red-500'
+                              : idx === 2
+                                ? 'bg-purple-500/10 text-purple-500'
+                                : idx === 3
+                                  ? 'bg-green-500/10 text-green-500'
+                                  : 'bg-muted text-muted-foreground',
+                    ]"
                 >
                     <component :is="item.icon" :size="20" class="text-muted-foreground" />
                 </div>

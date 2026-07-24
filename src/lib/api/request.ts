@@ -32,17 +32,13 @@ async function getRealIP(): Promise<string> {
 
 export async function post<T>(path: string, params?: Record<string, string>): Promise<T> {
     const realIP = await getRealIP()
-    const searchParams = new URLSearchParams({ timestamp: String(ts()) })
-    if (realIP) searchParams.set("realIP", realIP)
-    if (params) {
-        for (const [k, v] of Object.entries(params)) {
-            searchParams.set(k, v)
-        }
-    }
-    const r = await fetch(`${BASE}${path}?${searchParams}`, {
+    const query = new URLSearchParams({ timestamp: String(ts()) })
+    if (realIP) query.set("realIP", realIP)
+    const body = new URLSearchParams(params)
+    const r = await fetch(`${BASE}${path}?${query}`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params ? new URLSearchParams(params) : undefined,
+        body,
     })
     return r.json() as T
 }
