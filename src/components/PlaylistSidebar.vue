@@ -1,7 +1,18 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import { Plus, Play, Music } from "@lucide/vue"
+import { Plus, Music, RefreshCw } from "@lucide/vue"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog"
 import { ncmUserPlaylist, ncmCreatePlaylist, type PlaylistSimple } from "@/lib/api"
 import { loadConfig } from "@/lib/store"
 
@@ -15,7 +26,8 @@ const currentId = computed(() => {
     return id ? Number(id) : null
 })
 
-onMounted(async () => {
+async function fetchPlaylists() {
+    loading.value = true
     const config = await loadConfig()
     if (config.ncmProfile && config.ncmCookie) {
         try {
@@ -26,22 +38,38 @@ onMounted(async () => {
         }
     }
     loading.value = false
-})
+}
+
+onMounted(fetchPlaylists)
 
 function select(id: number) {
     router.push(`/app/playlists/${id}`)
 }
 
-async function create() {
+// ── 新建歌单 Dialog ──
+const showCreate = ref(false)
+const newName = ref("")
+const isPrivate = ref(false)
+const creating = ref(false)
+
+async function doCreate() {
+    if (!newName.value.trim()) return
+    creating.value = true
     const config = await loadConfig()
-    if (!config.ncmCookie) return
     try {
-        await ncmCreatePlaylist(`新歌单 ${new Date().toLocaleDateString()}`, config.ncmCookie)
-        const res = await ncmUserPlaylist(config.ncmProfile!.userId, config.ncmCookie)
-        if (res.code === 200) playlists.value = res.playlist ?? []
+        await ncmCreatePlaylist(
+            newName.value.trim(),
+            isPrivate.value ? "10" : undefined,
+            config.ncmCookie,
+        )
+        showCreate.value = false
+        newName.value = ""
+        isPrivate.value = false
+        await fetchPlaylists()
     } catch {
         /* ignore */
     }
+    creating.value = false
 }
 </script>
 
@@ -49,9 +77,14 @@ async function create() {
     <aside class="sidebar">
         <div class="sidebar-header">
             <span class="sidebar-title">我的歌单</span>
-            <button class="sidebar-add" @click="create">
-                <Plus :size="14" />
-            </button>
+            <div class="flex items-center gap-1">
+                <button class="sidebar-action" @click="fetchPlaylists">
+                    <RefreshCw :size="14" :class="loading && 'animate-spin'" />
+                </button>
+                <button class="sidebar-action" @click="showCreate = true">
+                    <Plus :size="14" />
+                </button>
+            </div>
         </div>
         <div v-if="loading" class="sidebar-loading">
             <div
@@ -80,6 +113,36 @@ async function create() {
                 </div>
             </button>
         </div>
+
+        <!-- 新建歌单 Dialog -->
+        <Dialog :open="showCreate" @update:open="showCreate = $event">
+            <DialogContent class="sm:max-w-sm">
+                <DialogHeader>
+                    <DialogTitle>新建歌单</DialogTitle>
+                </DialogHeader>
+                <div class="flex flex-col gap-4 py-4">
+                    <div class="flex flex-col gap-2">
+                        <Label for="pl-name">歌单名称</Label>
+                        <Input
+                            id="pl-name"
+                            v-model="newName"
+                            placeholder="输入歌单名称"
+                            @keydown.enter="doCreate"
+                        />
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <Label for="pl-private" class="cursor-pointer">设为隐私歌单</Label>
+                        <Switch id="pl-private" v-model="isPrivate" />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" @click="showCreate = false">取消</Button>
+                    <Button :disabled="!newName.trim() || creating" @click="doCreate">
+                        {{ creating ? "创建中..." : "创建" }}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </aside>
 </template>
 
@@ -107,20 +170,20 @@ async function create() {
     color: var(--foreground);
 }
 
-.sidebar-add {
-    width: 26px;
-    height: 26px;
+.sidebar-action {
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     border: none;
-    background: var(--muted);
+    background: transparent;
     color: var(--muted-foreground);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition: all 0.15s;
 }
-.sidebar-add:hover {
+.sidebar-action:hover {
     background: var(--accent);
     color: var(--accent-foreground);
 }

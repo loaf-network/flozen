@@ -196,8 +196,9 @@ export function ncmPlaylistTracks(id: number, cookie?: string, limit?: number, o
     return post<{ code: number; songs: SearchSong[] }>("/playlist/track/all", params)
 }
 
-export function ncmCreatePlaylist(name: string, cookie?: string) {
+export function ncmCreatePlaylist(name: string, privacy?: string, cookie?: string) {
     const params: Record<string, string> = { name }
+    if (privacy) params.privacy = privacy
     if (cookie) params.cookie = cookie
     return post<PlaylistCreateRes>("/playlist/create", params)
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import { Play, Shuffle, List, Music } from "@lucide/vue"
+import { Play, Shuffle, List, Music, RefreshCw } from "@lucide/vue"
 import { Button } from "@/components/ui/button"
 import { ncmPlaylistDetail, ncmPlaylistTracks, type SearchSong } from "@/lib/api"
 import { loadConfig } from "@/lib/store"
@@ -115,6 +115,14 @@ function formatDuration(ms: number) {
                         @click="viewMode = viewMode === 'gallery' ? 'list' : 'gallery'"
                     >
                         <List :size="14" /> {{ viewMode === "gallery" ? "列表" : "画廊" }}
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        :disabled="loading"
+                        @click="loadPlaylist(Number(route.params.id))"
+                    >
+                        <RefreshCw :size="16" :class="loading && 'animate-spin'" />
                     </Button>
                 </div>
             </div>
