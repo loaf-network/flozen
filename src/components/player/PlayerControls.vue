@@ -14,6 +14,7 @@ import {
     Heart,
 } from "@lucide/vue"
 import { Button } from "@/components/ui/button"
+import PlayQueuePanel from "./PlayQueuePanel.vue"
 import {
     player,
     toggle,
@@ -26,6 +27,7 @@ import {
 } from "@/lib/player"
 
 const bar = ref<HTMLDivElement>()
+const queueOpen = ref(false)
 const pct = computed(() => (player.duration > 0 ? (player.currentTime / player.duration) * 100 : 0))
 
 function onSeek(e: MouseEvent) {
@@ -154,12 +156,19 @@ onMounted(() => {
                 <Button
                     variant="ghost"
                     :size="'icon' as any"
-                    class="!text-white/60 hover:!text-white hover:!bg-white/10"
+                    :class="
+                        queueOpen
+                            ? '!text-primary hover:!text-primary'
+                            : '!text-white/60 hover:!text-white hover:!bg-white/10'
+                    "
                     title="播放列表"
+                    @click="queueOpen = !queueOpen"
                 >
                     <ListMusic :size="18" />
                 </Button>
             </div>
         </div>
     </div>
+
+    <PlayQueuePanel v-model:open="queueOpen" />
 </template>

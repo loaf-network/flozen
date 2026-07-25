@@ -2,9 +2,38 @@ import { reactive } from "vue"
 import { ncmSongUrl, ncmLyric, type SearchSong } from "./api"
 import { parseLrc, getCurrentLine, type LyricLine } from "./lyrics"
 import { loadConfig } from "./store"
+import { initMedia, updateMedia, clearMedia } from "./smtc"
 
 const audio = new Audio()
 audio.volume = 0.7
+
+initMedia()
+
+function syncMediaMetadata(song: SearchSong) {
+    updateMedia({
+        title: song.name,
+        artist: song.ar?.map((a) => a.name).join(" / "),
+        album: song.al?.name,
+        artworkUrl: song.al?.picUrl ? `${song.al.picUrl}?param=300y300` : undefined,
+        duration: song.dt / 1000,
+        position: 0,
+        isPlaying: true,
+        shuffle: player.shuffle,
+        repeatMode: player.repeatMode,
+    })
+}
+
+async function setWindowTitle(song: SearchSong | null) {
+    try {
+        const { getCurrentWindow } = await import("@tauri-apps/api/window")
+        const title = song
+            ? `${song.name} - ${song.ar?.map((a) => a.name).join(" / ")} · Flozen`
+            : "Flozen"
+        await getCurrentWindow().setTitle(title)
+    } catch {
+        /* 非 Tauri 环境 */
+    }
+}
 
 export interface PlayerState {
     audio: HTMLAudioElement
@@ -41,6 +70,7 @@ export const player = reactive<PlayerState>({
 })
 
 let animFrame = 0
+let lastMediaSync = 0
 
 function updateTime() {
     player.currentTime = audio.currentTime
@@ -48,16 +78,23 @@ function updateTime() {
     if (player.lyrics.length > 0) {
         player.currentLyricIndex = getCurrentLine(player.lyrics, player.currentTime)
     }
+    const now = performance.now()
+    if (now - lastMediaSync > 2000) {
+        lastMediaSync = now
+        updateMedia({ position: player.currentTime })
+    }
     animFrame = requestAnimationFrame(updateTime)
 }
 
 audio.addEventListener("play", () => {
     player.playing = true
     animFrame = requestAnimationFrame(updateTime)
+    updateMedia({ isPlaying: true })
 })
 audio.addEventListener("pause", () => {
     player.playing = false
     cancelAnimationFrame(animFrame)
+    updateMedia({ isPlaying: false })
 })
 audio.addEventListener("ended", () => {
     player.playing = false
@@ -80,6 +117,8 @@ async function loadAndPlay(song: SearchSong) {
         }
         audio.src = url
         audio.play().catch(() => {})
+        syncMediaMetadata(song)
+        setWindowTitle(song)
 
         const lyricRes = await ncmLyric(song.id)
         const lrc = lyricRes.lrc?.lyric ?? ""
@@ -219,12 +258,41 @@ export function removeFromQueue(index: number) {
             player.queueIndex = -1
             player.currentSong = null
             audio.pause()
+            clearMedia()
+            setWindowTitle(null)
             return
         }
         if (player.queueIndex >= player.queue.length) player.queueIndex = 0
         player.currentSong = player.queue[player.queueIndex]
         loadAndPlay(player.currentSong)
     }
+}
+
+export function moveQueueItem(from: number, to: number) {
+    if (from < 0 || from >= player.queue.length) return
+    if (to < 0 || to >= player.queue.length) return
+    if (from === to) return
+    const [item] = player.queue.splice(from, 1)
+    player.queue.splice(to, 0, item)
+    if (player.queueIndex === from) {
+        player.queueIndex = to
+    } else if (from < player.queueIndex && to >= player.queueIndex) {
+        player.queueIndex--
+    } else if (from > player.queueIndex && to <= player.queueIndex) {
+        player.queueIndex++
+    }
+}
+
+export function clearQueue() {
+    player.queue = []
+    player.queueIndex = -1
+    player.currentSong = null
+    player.lyrics = []
+    player.currentLyricIndex = -1
+    audio.pause()
+    audio.src = ""
+    clearMedia()
+    setWindowTitle(null)
 }
 
 export function setQueue(songs: SearchSong[], startIndex = 0) {

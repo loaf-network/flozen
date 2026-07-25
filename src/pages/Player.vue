@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, nextTick, watch, onMounted } from "vue"
+import { computed, ref, nextTick, watch } from "vue"
 import { player, seek } from "@/lib/player"
 import PlayerControls from "@/components/player/PlayerControls.vue"
 
@@ -20,8 +20,12 @@ const currentIdx = computed(() => player.currentLyricIndex)
 function autoScroll() {
     if (userScrolling.value || !lyricsEl.value) return
     nextTick(() => {
-        const el = lyricsEl.value?.querySelector(".l--active")
-        el?.scrollIntoView({ behavior: "smooth", block: "center" })
+        const container = lyricsEl.value
+        const el = container?.querySelector<HTMLElement>(".l--active")
+        if (!container || !el) return
+        // 不用 scrollIntoView：它会连带滚动外层页面
+        const top = el.offsetTop - container.clientHeight / 2 + el.offsetHeight / 2
+        container.scrollTo({ top, behavior: "smooth" })
     })
 }
 
@@ -147,7 +151,9 @@ const album = computed(() => player.currentSong?.al?.name ?? "")
         >
             <div ref="lyricsEl" class="lyrics">
                 <div class="spacer" />
-                <div v-if="!allLines.length" class="empty">暂无歌词</div>
+                <div v-if="!allLines.length" class="empty">
+                    {{ player.currentSong ? "正在获取歌词中..." : "暂无歌词" }}
+                </div>
                 <p
                     v-for="(l, i) in allLines"
                     :key="i"
@@ -385,6 +391,7 @@ const album = computed(() => player.currentSong?.al?.name ?? "")
     );
 }
 .lyrics {
+    position: relative;
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;

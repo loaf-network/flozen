@@ -3,26 +3,37 @@ import { ref, onMounted, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { Play, Shuffle, List, Music, RefreshCw } from "@lucide/vue"
 import { Button } from "@/components/ui/button"
-import { ncmPlaylistDetail, ncmPlaylistTracks, type SearchSong } from "@/lib/api"
+import {
+    ncmPlaylistDetail,
+    ncmPlaylistTracks,
+    type SearchSong,
+    type PlaylistSimple,
+} from "@/lib/api"
 import { loadConfig } from "@/lib/store"
-import { player, setQueue, play } from "@/lib/player"
+import { setQueue, play } from "@/lib/player"
+import { getCachedDetail, setCachedDetail } from "@/lib/playlistCache"
 import SongGrid from "@/components/SongGrid.vue"
 
 const route = useRoute()
 const router = useRouter()
 const songs = ref<SearchSong[]>([])
-const playlist = ref<{
-    name: string
-    coverImgUrl: string
-    trackCount: number
-    playCount: number
-} | null>(null)
+const playlist = ref<PlaylistSimple | null>(null)
 const loading = ref(true)
 const viewMode = ref<"gallery" | "list">("gallery")
 const galleryKey = ref(0)
 
-async function loadPlaylist(id: number) {
+async function loadPlaylist(id: number, force = false) {
     loading.value = true
+    if (!force) {
+        const cached = getCachedDetail(id)
+        if (cached) {
+            playlist.value = cached.detail
+            songs.value = cached.songs
+            loading.value = false
+            galleryKey.value++
+            return
+        }
+    }
     const config = await loadConfig()
     try {
         const [detailRes, tracksRes] = await Promise.all([
@@ -31,6 +42,7 @@ async function loadPlaylist(id: number) {
         ])
         if (detailRes.code === 200) playlist.value = detailRes.playlist
         if (tracksRes.code === 200) songs.value = tracksRes.songs
+        if (playlist.value) setCachedDetail(id, playlist.value, songs.value)
     } catch {
         /* ignore */
     }
@@ -122,7 +134,7 @@ function formatDuration(ms: number) {
                             variant="ghost"
                             size="icon"
                             :disabled="loading"
-                            @click="loadPlaylist(Number(route.params.id))"
+                            @click="loadPlaylist(Number(route.params.id), true)"
                         >
                             <RefreshCw :size="16" :class="loading && 'animate-spin'" />
                         </Button>

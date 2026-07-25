@@ -1,0 +1,15 @@
+{
+    "$schema": "../gen/schemas/mobile-schema.json",
+    "identifier": "mobile-media",
+    "description": "Mobile media session (lockscreen controls)",
+    "windows": [
+        "main"
+    ],
+    "platforms": [
+        "android",
+        "iOS"
+    ],
+    "permissions": [
+        "media-session:default"
+    ]
+}

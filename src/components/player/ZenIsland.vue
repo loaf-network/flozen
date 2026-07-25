@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue"
-import { Minus, X, Maximize2, Minimize2 } from "@lucide/vue"
-import { player, formatTime } from "@/lib/player"
+import { Minus, X, Maximize2 } from "@lucide/vue"
+import { player } from "@/lib/player"
 
 const hovering = ref(false)
 
@@ -14,16 +14,17 @@ const lyricText = computed(() => {
 const artists = computed(() => player.currentSong?.ar?.map((a) => a.name).join(" / ") ?? "")
 
 function minimize() {
-    // @ts-ignore Tauri API
-    import("@tauri-apps/api/window").then((m) => m.appWindow.minimize()).catch(() => {})
+    import("@tauri-apps/api/window").then((m) => m.getCurrentWindow().minimize()).catch(() => {})
 }
 
 function maximize() {
-    import("@tauri-apps/api/window").then((m) => m.appWindow.toggleMaximize()).catch(() => {})
+    import("@tauri-apps/api/window")
+        .then((m) => m.getCurrentWindow().toggleMaximize())
+        .catch(() => {})
 }
 
 function close() {
-    import("@tauri-apps/api/window").then((m) => m.appWindow.close()).catch(() => {})
+    import("@tauri-apps/api/window").then((m) => m.getCurrentWindow().close()).catch(() => {})
 }
 </script>
 

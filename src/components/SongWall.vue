@@ -146,7 +146,7 @@ function onPointerMove(e: PointerEvent) {
     moveTotal += Math.abs(e.clientX - prevX) + Math.abs(e.clientY - prevY)
 }
 
-function onPointerUp(e: PointerEvent) {
+function onPointerUp() {
     dragging.value = false
     // Immediately snap to nearest card
     let best = Infinity

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog"
 import { ncmUserPlaylist, ncmCreatePlaylist, type PlaylistSimple } from "@/lib/api"
 import { loadConfig } from "@/lib/store"
+import { getCachedList, setCachedList } from "@/lib/playlistCache"
 
 const route = useRoute()
 const router = useRouter()
@@ -26,13 +27,25 @@ const currentId = computed(() => {
     return id ? Number(id) : null
 })
 
-async function fetchPlaylists() {
+async function fetchPlaylists(force = false) {
     loading.value = true
     const config = await loadConfig()
     if (config.ncmProfile && config.ncmCookie) {
+        const userId = config.ncmProfile.userId
+        if (!force) {
+            const cached = getCachedList(userId)
+            if (cached) {
+                playlists.value = cached
+                loading.value = false
+                return
+            }
+        }
         try {
-            const res = await ncmUserPlaylist(config.ncmProfile.userId, config.ncmCookie)
-            if (res.code === 200) playlists.value = res.playlist ?? []
+            const res = await ncmUserPlaylist(userId, config.ncmCookie)
+            if (res.code === 200) {
+                playlists.value = res.playlist ?? []
+                setCachedList(userId, playlists.value)
+            }
         } catch {
             /* ignore */
         }
@@ -40,7 +53,7 @@ async function fetchPlaylists() {
     loading.value = false
 }
 
-onMounted(fetchPlaylists)
+onMounted(() => fetchPlaylists())
 
 function select(id: number) {
     router.push(`/app/playlists/${id}`)
@@ -65,7 +78,7 @@ async function doCreate() {
         showCreate.value = false
         newName.value = ""
         isPrivate.value = false
-        await fetchPlaylists()
+        await fetchPlaylists(true)
     } catch {
         /* ignore */
     }
@@ -78,7 +91,7 @@ async function doCreate() {
         <div class="sidebar-header">
             <span class="sidebar-title">我的歌单</span>
             <div class="flex items-center gap-1">
-                <button class="sidebar-action" @click="fetchPlaylists">
+                <button class="sidebar-action" @click="fetchPlaylists(true)">
                     <RefreshCw :size="14" :class="loading && 'animate-spin'" />
                 </button>
                 <button class="sidebar-action" @click="showCreate = true">

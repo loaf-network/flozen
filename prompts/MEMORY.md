@@ -51,6 +51,12 @@
 - NCM 歌曲 URL: `/song/url/v1`, level 参数控制音质（standard/higher/exhigh/lossless/hires）
 - NCM 歌词: `/lyric`, 返回 `lrc.lyric`（LRC 格式字符串）
 - NCM 歌单: `/user/playlist`（用户歌单列表）, `/playlist/detail`（含部分 tracks）, `/playlist/track/all`（全部 tracks）, `/playlist/create`, `/playlist/delete`, `/playlist/tracks?op=add|del`
+- 歌单内存缓存（playlistCache.ts）: getCachedDetail/setCachedDetail + getCachedList/setCachedList，TTL 10 分钟，避免每次访问都请求 Vercel serverless（冷启动慢）；手动刷新按钮和新建歌单后 force=true 绕过缓存
+- 播放队列拖拽排序 moveQueueItem: 移除项后 splice 插入目标位置，queueIndex 同步规则——`from===queueIndex→to`；`from<queueIndex && to>=queueIndex → -1`；`from>queueIndex && to<=queueIndex → +1`
+- **系统媒体控件方案（重要）**: 桌面端直接用浏览器标准 `navigator.mediaSession`（WebView2 自动映射到 Win SMTC，含封面/进度/上下首/seekto），零 Rust 依赖；移动端 `tauri-plugin-media-session` 0.2.4（仅暴露 Rust 方法 `MediaSessionExt`，自写 command 包装见 smtc_mobile.rs）。**勿用 `tauri-plugin-media` 0.1.1**：其 Windows 实现用 MediaPlayer+CommandManager 模式，SMTC 会话根本注册不出来（实测「未知应用」无元数据），且会与 WebView2 为 `<audio>` 自建的会话冲突
+- **重要**：Tauri v2 的 `@tauri-apps/api/window` 没有 `appWindow`（v1 API），要用 `getCurrentWindow()`。ZenIsland 曾用 v1 API 导致最小化/关闭按钮静默失效
+- SMTC 进度同步性能：不能每帧 IPC，rAF 里用 `performance.now()` 节流 2 秒推一次 position；元数据仅切歌时全量推
+- **capability 权限需按平台拆分**：桌面编译时移动插件的权限不存在（反之亦然），`media:default` 放 `capabilities/desktop.json`（platforms: windows/macOS/linux）、`media-session:default` 放 `capabilities/mobile.json`（platforms: android/iOS），混放 default.json 会导致 cargo build 失败
 
 ## 工作总结
 
@@ -72,6 +78,11 @@
 - **AppHeader 歌词切换过渡**：歌词 `<p>` 的 key 绑定 `player.currentLyricIndex`，歌词行变化时触发已有 hdr-text 上滑淡入过渡
 - **侧边栏页面过渡改渐隐渐显**：同父级路由切换由 fade-vertical 改为 fade，并移除 style.css 中的 fade-vertical 样式；AppLayout 的 `<Transition>` 需加 `mode="out-in"`，否则新旧页面同时渲染上下堆叠，视觉上像滑动
 - **重要**：`<Transition mode="out-in">` 要求页面组件必须单根节点。PlaylistDetail.vue 原为多根（v-if 链 + 注释编译成 Fragment）导致过渡卡死（页面不显示、无法切换），已包一层 `<div class="h-full">` 修复。新页面组件一律保持单根模板
+- **重要**：歌词自动滚动不能用 `scrollIntoView`（会连带滚动所有可滚动祖先，最后一句歌词时把整页顶下去）。Player.vue 已改为对 `.lyrics` 容器手动 `scrollTo(offsetTop - clientHeight/2 + offsetHeight/2)`，并给 `.lyrics` 加 `position: relative` 保证 offsetTop 基准正确
+- **播放队列面板**（PlayQueuePanel.vue）：右侧抽屉（Teleport to body + 半透明遮罩点击关闭），展示 player.queue；当前播放高亮 `color-mix(in oklch, var(--primary) 12%, transparent)`；HTML5 draggable 拖拽排序；逐项删除 + 清空；接入 PlayerControls.vue 的 ListMusic 按钮（原占位变可用，激活态 primary 色）。player.ts 新增 `moveQueueItem(from, to)` / `clearQueue()`
+- **SMTC/系统媒体控件适配**：桌面 `navigator.mediaSession`（WebView2 原生映射 SMTC）+ 移动 tauri-plugin-media-session；`src/lib/smtc.ts` 前端适配层（getPlatform 缓存 + initMedia 单次注册媒体键 action handler + updateMedia/clearMedia 分平台分发）；player.ts 集成（切歌推元数据+封面 `?param=300y300`、play/pause 推状态、rAF 节流 2s 推进度、clearQueue 清空）；媒体键 play/pause/previoustrack/nexttrack/stop/seekto 反控播放器；`smtc_mobile.rs` 移动端 command 包装；lib.rs 加 `get_platform` command。曾用 tauri-plugin-media 0.1.1 实测失败后移除
+- **窗口标题动态更新**：播放时 `{歌名} - {艺术家} · Flozen`，无歌曲回退 `Flozen`（player.ts 的 setWindowTitle，getCurrentWindow().setTitle）
+- **修复 ZenIsland Tauri v1 API 残留**：`appWindow` → `getCurrentWindow()`，窗口控制按钮恢复可用
 
 ### 项目结构 (模块化)
 

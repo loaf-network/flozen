@@ -153,6 +153,8 @@ const expanded = ref(false)
     opacity: 1;
 }
 .act-btn--play:hover {
+    background: var(--primary);
+    color: var(--primary-foreground);
     filter: brightness(1.15);
 }
 
