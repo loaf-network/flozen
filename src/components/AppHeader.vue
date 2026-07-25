@@ -268,6 +268,36 @@ async function closeWin() {
     color: #fff;
 }
 
+:root .is-player .win-btn {
+    color: rgba(0, 0, 0, 0.3);
+}
+:root .is-player .win-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: rgba(0, 0, 0, 0.6);
+}
+:root .is-player .header-back {
+    color: rgba(0, 0, 0, 0.45);
+}
+:root .is-player .header-back:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.dark .is-player .win-btn {
+    color: rgba(255, 255, 255, 0.35);
+}
+.dark .is-player .win-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+}
+.dark .is-player .header-back {
+    color: rgba(255, 255, 255, 0.6);
+}
+.dark .is-player .header-back:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+}
+
 .hdr-text-enter-active,
 .hdr-text-leave-active {
     transition:

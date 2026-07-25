@@ -30,19 +30,21 @@ const links = [
         <div class="about-header mb-6 px-1">
             <div class="flex items-center gap-4">
                 <div
-                    class="size-16 rounded-2xl bg-white/15 flex items-center justify-center flex-shrink-0"
+                    class="size-16 rounded-2xl bg-foreground/10 flex items-center justify-center flex-shrink-0"
                 >
-                    <Music :size="28" :stroke-width="1.5" class="text-white" />
+                    <Music :size="28" :stroke-width="1.5" class="text-foreground" />
                 </div>
                 <div class="flex-1 min-w-0">
-                    <h2 class="text-lg font-bold tracking-normal text-white">Flozen 音乐播放器</h2>
-                    <p class="text-xs text-white/60 mt-0.5">
+                    <h2 class="text-lg font-bold tracking-normal text-foreground">
+                        Flozen 音乐播放器
+                    </h2>
+                    <p class="text-xs text-muted-foreground mt-0.5">
                         v{{ version }} · by
                         <a
                             href="https://loaf.network/"
                             target="_blank"
                             rel="noopener"
-                            class="text-white/80 hover:text-white hover:underline"
+                            class="text-foreground/80 hover:text-foreground hover:underline"
                             >Loaf Network</a
                         >
                     </p>

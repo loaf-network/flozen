@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { onMounted } from "vue"
+import { computed, onMounted } from "vue"
+import { useRoute } from "vue-router"
 import { Toaster } from "@/components/ui/sonner"
 import AppHeader from "@/components/AppHeader.vue"
 import MusicCapsule from "@/components/player/MusicCapsule.vue"
 import "vue-sonner/style.css"
+
+const route = useRoute()
+const onPlayer = computed(() => route.name === "player")
 
 const STORAGE_KEY = "flozen-theme"
 
@@ -30,7 +34,7 @@ onMounted(() => {
 <template>
     <div class="app-root">
         <AppHeader />
-        <div class="app-content">
+        <div class="app-content" :class="{ 'is-player': onPlayer }">
             <router-view v-slot="{ Component }">
                 <Transition name="fade" mode="out-in">
                     <component :is="Component" />
@@ -56,5 +60,8 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     min-height: 0;
+}
+.app-content.is-player {
+    background: #000;
 }
 </style>
