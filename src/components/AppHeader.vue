@@ -1,21 +1,36 @@
 <script setup lang="ts">
-import { computed, ref } from "vue"
-import { useRoute } from "vue-router"
-import { Minus, X, Maximize2 } from "@lucide/vue"
+import { computed, ref, onMounted } from "vue"
+import { useRoute, useRouter } from "vue-router"
+import { Minus, X, Maximize2, ChevronLeft } from "@lucide/vue"
 import { player } from "@/lib/player"
 
 const route = useRoute()
+const router = useRouter()
 const hovering = ref(false)
 
-const onPlayer = computed(() => route.path === "/player")
+const onPlayer = computed(() => route.name === "player")
+const artists = computed(() => player.currentSong?.ar?.map((a) => a.name).join("/") ?? "")
 
-const lyricText = computed(() => {
+const currentLyric = computed(() => {
     const idx = player.currentLyricIndex
     if (idx < 0 || idx >= player.lyrics.length) return ""
     return player.lyrics[idx].text
 })
 
-const artists = computed(() => player.currentSong?.ar?.map((a) => a.name).join(" - ") ?? "")
+const hitokoto = ref("")
+
+onMounted(async () => {
+    try {
+        const res = await fetch(
+            "https://v1.hitokoto.cn/?c=a&c=b&c=c&c=d&c=e&c=f&c=g&c=h&c=i&c=j&c=k&c=l&encode=text&charset=utf-8",
+        )
+        if (res.ok) {
+            hitokoto.value = (await res.text()).trim()
+        }
+    } catch {
+        /* ignore */
+    }
+})
 
 async function minimize() {
     const { getCurrentWindow } = await import("@tauri-apps/api/window")
@@ -32,23 +47,35 @@ async function closeWin() {
 </script>
 
 <template>
-    <header data-tauri-drag-region class="app-header">
+    <header data-tauri-drag-region class="app-header" :class="{ 'is-player': onPlayer }">
         <div class="header-left">
-            <span class="header-brand">Flozen</span>
+            <button
+                v-if="onPlayer"
+                class="header-back"
+                data-tauri-drag-region="false"
+                @click.stop="router.back()"
+            >
+                <ChevronLeft :size="18" :stroke-width="2" />
+            </button>
+            <span v-else class="header-brand">Flozen</span>
         </div>
 
-        <div class="header-center" @mouseenter="hovering = true" @mouseleave="hovering = false">
-            <Transition name="hdr-fade" mode="out-in">
-                <div v-if="onPlayer" key="player" class="header-placeholder" />
-                <div v-else-if="hovering && player.currentSong" key="info" class="header-info">
-                    <span class="header-artist">{{ artists }}</span>
-                    <span class="header-song">{{ player.currentSong?.name }}</span>
-                </div>
-                <p v-else-if="player.currentSong" key="lyric" class="header-lyric">
-                    {{ lyricText || "..." }}
-                </p>
-                <p v-else key="empty" class="header-idle">暂无歌曲正在播放中</p>
-            </Transition>
+        <div class="header-center">
+            <div class="header-text" @mouseenter="hovering = true" @mouseleave="hovering = false">
+                <Transition name="hdr-text" mode="out-in">
+                    <p v-if="player.currentSong && !hovering" key="lyric" class="header-lyric">
+                        {{ currentLyric || "···" }}
+                    </p>
+                    <p v-else-if="player.currentSong" key="song" class="header-song-info">
+                        <span class="hdr-artist">{{ artists }}</span>
+                        <span class="hdr-sep">-</span>
+                        <span class="hdr-name">{{ player.currentSong.name }}</span>
+                    </p>
+                    <p v-else key="idle" class="header-idle">
+                        {{ hitokoto || "Flozen 音乐播放器" }}
+                    </p>
+                </Transition>
+            </div>
         </div>
 
         <div class="header-right">
@@ -84,34 +111,57 @@ async function closeWin() {
 .app-header {
     display: flex;
     align-items: center;
-    height: 48px;
-    padding: 0 16px;
-    background: rgba(12, 11, 10, 0.88);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    height: 44px;
+    padding: 0 12px;
+    background: transparent;
+    border-bottom: 1px solid transparent;
     flex-shrink: 0;
     user-select: none;
     z-index: 100;
+    transition:
+        background 0.3s ease,
+        border-color 0.3s ease;
 }
-
-:root .app-header {
-    background: rgba(255, 255, 255, 0.88);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+.app-header:not(.is-player) {
+    background: var(--background);
+    border-bottom-color: var(--border);
 }
-
 .header-left {
     flex-shrink: 0;
-    width: 72px;
+    width: 100px;
+    display: flex;
+    align-items: center;
 }
-
 .header-brand {
     font-size: 14px;
     font-weight: 700;
-    color: rgba(220, 80, 60, 1);
-    letter-spacing: 0.02em;
+    color: var(--primary);
+    letter-spacing: 0.03em;
+    padding-left: 4px;
 }
-
-:root .header-brand {
-    color: rgba(200, 50, 20, 1);
+.header-back {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--muted-foreground);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+.header-back:hover {
+    background: var(--accent);
+    color: var(--foreground);
+}
+.is-player .header-back {
+    color: rgba(255, 255, 255, 0.6);
+}
+.is-player .header-back:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .header-center {
@@ -123,60 +173,56 @@ async function closeWin() {
     min-width: 0;
     height: 100%;
 }
-
+.header-text {
+    max-width: 100%;
+    overflow: hidden;
+}
 .header-lyric {
     font-size: 15px;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    color: var(--foreground);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-:root .header-lyric {
-    color: rgba(0, 0, 0, 0.85);
+
+.dark .header-lyric {
+    color: rgba(255, 255, 255, 0.85);
 }
 
+.header-song-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+.hdr-artist {
+    color: var(--muted-foreground);
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+.hdr-sep {
+    color: var(--border);
+    flex-shrink: 0;
+}
+.hdr-name {
+    color: var(--foreground);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 .header-idle {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.18);
-    font-weight: 500;
-}
-:root .header-idle {
-    color: rgba(0, 0, 0, 0.15);
-}
-
-.header-placeholder {
-    /* empty space when on player page */
-}
-
-.header-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    line-height: 1;
-}
-
-.header-artist {
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.38);
-    font-weight: 500;
-}
-:root .header-artist {
-    color: rgba(0, 0, 0, 0.35);
-}
-
-.header-song {
-    font-size: 14px;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.92);
+    color: var(--muted-foreground);
+    opacity: 0.4;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 260px;
-}
-:root .header-song {
-    color: rgba(0, 0, 0, 0.85);
+    max-width: 360px;
 }
 
 .header-right {
@@ -184,52 +230,56 @@ async function closeWin() {
     align-items: center;
     gap: 2px;
     flex-shrink: 0;
-    width: 86px;
+    width: 100px;
     justify-content: flex-end;
 }
-
 .win-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
     border: none;
     background: transparent;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--muted-foreground);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.15s;
+    opacity: 0.5;
 }
 .win-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.7);
+    background: var(--accent);
+    color: var(--foreground);
+    opacity: 1;
 }
 .win-btn--close:hover {
     background: rgba(220, 60, 50, 0.55);
     color: #fff;
 }
-
-:root .win-btn {
-    color: rgba(0, 0, 0, 0.3);
+.is-player .win-btn {
+    color: rgba(255, 255, 255, 0.35);
 }
-:root .win-btn:hover {
-    background: rgba(0, 0, 0, 0.05);
-    color: rgba(0, 0, 0, 0.6);
+.is-player .win-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+}
+.is-player .win-btn--close:hover {
+    background: rgba(220, 60, 50, 0.55);
+    color: #fff;
 }
 
-.hdr-fade-enter-active,
-.hdr-fade-leave-active {
+.hdr-text-enter-active,
+.hdr-text-leave-active {
     transition:
-        opacity 0.2s ease,
-        transform 0.2s ease;
+        opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.hdr-fade-enter-from {
+.hdr-text-enter-from {
     opacity: 0;
-    transform: translateY(3px);
+    transform: translateY(6px);
 }
-.hdr-fade-leave-to {
+.hdr-text-leave-to {
     opacity: 0;
-    transform: translateY(-3px);
+    transform: translateY(-6px);
 }
 </style>

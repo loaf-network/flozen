@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { ncmPlaylistDetail, ncmPlaylistTracks, type SearchSong } from "@/lib/api"
 import { loadConfig } from "@/lib/store"
 import { player, setQueue, play } from "@/lib/player"
-import SongWall from "@/components/SongWall.vue"
+import SongGrid from "@/components/SongGrid.vue"
 
 const route = useRoute()
 const router = useRouter()
@@ -122,7 +122,7 @@ function formatDuration(ms: number) {
 
         <!-- Gallery -->
         <div v-if="viewMode === 'gallery'" class="flex-1 min-h-0">
-            <SongWall :key="galleryKey" :songs="songs" :has-more="false" @play="onPlay" />
+            <SongGrid :key="galleryKey" :songs="songs" :has-more="false" @play="onPlay" />
         </div>
 
         <!-- List -->

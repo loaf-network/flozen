@@ -3,7 +3,6 @@ import { computed } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { Music, Home, Settings, Search, ListMusic } from "@lucide/vue"
 import PlaylistSidebar from "@/components/PlaylistSidebar.vue"
-import MiniPlayer from "@/components/player/MiniPlayer.vue"
 
 const route = useRoute()
 const router = useRouter()
@@ -56,11 +55,6 @@ function isActive(path: string) {
                         <component :is="item.icon" :size="18" :stroke-width="1.8" />
                     </button>
                 </nav>
-
-                <!-- 底部版本号 -->
-                <div class="flex items-center justify-center h-14 w-full">
-                    <span class="text-[10px] text-muted-foreground/60">v0.1.0</span>
-                </div>
             </aside>
 
             <!-- 歌单侧边栏 -->
@@ -75,7 +69,5 @@ function isActive(path: string) {
                 </router-view>
             </main>
         </div>
-
-        <MiniPlayer />
     </div>
 </template>

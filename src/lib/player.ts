@@ -181,6 +181,24 @@ export function toggleShuffle() {
     player.shuffle = !player.shuffle
 }
 
+export function cyclePlayMode() {
+    if (player.shuffle) {
+        // shuffle → sequential
+        player.shuffle = false
+        player.repeatMode = "none"
+    } else if (player.repeatMode === "none") {
+        // sequential → list repeat
+        player.repeatMode = "all"
+    } else if (player.repeatMode === "all") {
+        // list repeat → single repeat
+        player.repeatMode = "one"
+    } else {
+        // single repeat → shuffle
+        player.shuffle = true
+        player.repeatMode = "none"
+    }
+}
+
 export function addToQueue(song: SearchSong) {
     player.queue.push(song)
 }

@@ -2,6 +2,7 @@
 import { onMounted } from "vue"
 import { Toaster } from "@/components/ui/sonner"
 import AppHeader from "@/components/AppHeader.vue"
+import MusicCapsule from "@/components/player/MusicCapsule.vue"
 import "vue-sonner/style.css"
 
 const STORAGE_KEY = "flozen-theme"
@@ -36,6 +37,7 @@ onMounted(() => {
                 </Transition>
             </router-view>
         </div>
+        <MusicCapsule />
     </div>
     <Toaster />
 </template>
