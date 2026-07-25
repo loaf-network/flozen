@@ -68,6 +68,10 @@
 - **Appearance 丑态修复**：max-w-xl 居中 + Card 独立按钮卡片化 + 选中态 bg-accent + 去硬编码渐变
 - 侧边栏新增歌单入口 + Search/Grid/Wall 连接播放器（router.push("/player")）
 - 路由新增 /player + /app/playlists + /app/playlists/:id，播放页特殊过渡动画
+- **播放页液体流动背景**（Player.vue）：封面四象限取色 → 4 个色团（blob），border-radius 形变 + 位移缩放 + 外层慢旋转模拟液体流动；仅动画 transform/border-radius 保证性能；暂停播放时 `animation-play-state: paused` 静止。增强版：取色亮度归一化（最亮通道拉到 165）+ 色团 `mix-blend-mode: screen` 发光 + 位移幅度 ~1.5-2 倍 + 周期 8-15s + 旋转 36s + 遮罩降至 0.18
+- **AppHeader 歌词切换过渡**：歌词 `<p>` 的 key 绑定 `player.currentLyricIndex`，歌词行变化时触发已有 hdr-text 上滑淡入过渡
+- **侧边栏页面过渡改渐隐渐显**：同父级路由切换由 fade-vertical 改为 fade，并移除 style.css 中的 fade-vertical 样式；AppLayout 的 `<Transition>` 需加 `mode="out-in"`，否则新旧页面同时渲染上下堆叠，视觉上像滑动
+- **重要**：`<Transition mode="out-in">` 要求页面组件必须单根节点。PlaylistDetail.vue 原为多根（v-if 链 + 注释编译成 Fragment）导致过渡卡死（页面不显示、无法切换），已包一层 `<div class="h-full">` 修复。新页面组件一律保持单根模板
 
 ### 项目结构 (模块化)
 

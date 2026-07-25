@@ -6,8 +6,12 @@ import PlayerControls from "@/components/player/PlayerControls.vue"
 const lyricsEl = ref<HTMLDivElement>()
 const userScrolling = ref(false)
 const hovering = ref(false)
-const orbColor = ref("rgba(30,20,20,0.5)")
-const orbColor2 = ref("rgba(20,20,30,0.4)")
+const blobColors = ref([
+    "rgba(30,20,20,0.55)",
+    "rgba(20,20,30,0.45)",
+    "rgba(25,18,28,0.5)",
+    "rgba(18,26,24,0.4)",
+])
 let returnTimer: ReturnType<typeof setTimeout> | null = null
 
 const allLines = computed(() => player.lyrics)
@@ -40,7 +44,7 @@ function onClickLine(index: number) {
     autoScroll()
 }
 
-// ── 取色：双采样点用于流动效果 ──
+// ── 取色：四象限采样用于液体流动色团 ──
 function extractColors(url: string) {
     const img = new Image()
     img.crossOrigin = "anonymous"
@@ -53,27 +57,32 @@ function extractColors(url: string) {
         ctx.drawImage(img, 0, 0, 8, 8)
         const d = ctx.getImageData(0, 0, 8, 8).data
 
-        // 采样两半
-        let r1 = 0,
-            g1 = 0,
-            b1 = 0,
-            r2 = 0,
-            g2 = 0,
-            b2 = 0
-        const half = (8 * 8 * 4) / 2
-        for (let i = 0; i < half; i += 4) {
-            r1 += d[i]
-            g1 += d[i + 1]
-            b1 += d[i + 2]
+        const alphas = [0.65, 0.55, 0.6, 0.5]
+        const colors: string[] = []
+        for (let q = 0; q < 4; q++) {
+            const ox = (q % 2) * 4
+            const oy = Math.floor(q / 2) * 4
+            let r = 0,
+                g = 0,
+                b = 0
+            for (let y = 0; y < 4; y++) {
+                for (let x = 0; x < 4; x++) {
+                    const i = ((oy + y) * 8 + ox + x) * 4
+                    r += d[i]
+                    g += d[i + 1]
+                    b += d[i + 2]
+                }
+            }
+            r /= 16
+            g /= 16
+            b /= 16
+            // 亮度归一化：最亮通道拉到 165，避免深色封面色团不可见
+            const k = 165 / Math.max(r, g, b, 1)
+            colors.push(
+                `rgba(${Math.round(r * k)},${Math.round(g * k)},${Math.round(b * k)},${alphas[q]})`,
+            )
         }
-        for (let i = half; i < d.length; i += 4) {
-            r2 += d[i]
-            g2 += d[i + 1]
-            b2 += d[i + 2]
-        }
-        const n = half / 4
-        orbColor.value = `rgba(${Math.round((r1 / n) * 0.3)},${Math.round((g1 / n) * 0.3)},${Math.round((b1 / n) * 0.3)},0.55)`
-        orbColor2.value = `rgba(${Math.round((r2 / n) * 0.3)},${Math.round((g2 / n) * 0.3)},${Math.round((b2 / n) * 0.3)},0.45)`
+        blobColors.value = colors
     }
     img.src = url + "?param=20y20"
 }
@@ -86,7 +95,7 @@ watch(
     { immediate: true },
 )
 
-const artists = computed(() => player.currentSong?.ar?.map((a) => a.name).join(" · ") ?? "")
+const artists = computed(() => player.currentSong?.ar?.map((a) => a.name).join(" / ") ?? "")
 const album = computed(() => player.currentSong?.al?.name ?? "")
 </script>
 
@@ -101,8 +110,14 @@ const album = computed(() => player.currentSong?.al?.name ?? "")
                     : undefined,
             }"
         />
-        <div class="bg-orb orb-1" :style="{ background: orbColor }" />
-        <div class="bg-orb orb-2" :style="{ background: orbColor2 }" />
+        <div class="fluid" :class="{ 'fluid--paused': !player.playing }">
+            <div
+                v-for="(c, i) in blobColors"
+                :key="i"
+                :class="['blob', `blob-${i + 1}`]"
+                :style="{ background: c }"
+            />
+        </div>
         <div class="bg-overlay" />
 
         <!-- 左列 -->
@@ -176,54 +191,120 @@ const album = computed(() => player.currentSong?.al?.name ?? "")
     transform: scale(1.1);
     z-index: 0;
 }
-.bg-orb {
+.fluid {
     position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
+    inset: -15%;
     z-index: 1;
+    filter: blur(60px) saturate(1.6);
+    animation: fluid-spin 36s linear infinite;
+    will-change: transform;
 }
-.orb-1 {
-    width: 55%;
-    height: 55%;
-    top: 5%;
-    left: 10%;
-    animation: orb1 10s ease-in-out infinite;
+.blob {
+    position: absolute;
+    mix-blend-mode: screen;
+    will-change: transform, border-radius;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
 }
-.orb-2 {
-    width: 45%;
-    height: 45%;
-    bottom: 5%;
-    right: 15%;
-    animation: orb2 13s ease-in-out infinite;
+.fluid--paused,
+.fluid--paused .blob {
+    animation-play-state: paused;
 }
-@keyframes orb1 {
+.blob-1 {
+    width: 52%;
+    height: 52%;
+    top: 4%;
+    left: 8%;
+    border-radius: 46% 54% 60% 40% / 50% 42% 58% 50%;
+    animation-name: blob-a;
+    animation-duration: 8s;
+}
+.blob-2 {
+    width: 44%;
+    height: 46%;
+    bottom: 2%;
+    right: 10%;
+    border-radius: 58% 42% 44% 56% / 40% 60% 40% 60%;
+    animation-name: blob-b;
+    animation-duration: 10s;
+}
+.blob-3 {
+    width: 38%;
+    height: 40%;
+    top: 30%;
+    right: 22%;
+    border-radius: 40% 60% 55% 45% / 55% 45% 60% 40%;
+    animation-name: blob-c;
+    animation-duration: 13s;
+}
+.blob-4 {
+    width: 34%;
+    height: 36%;
+    bottom: 20%;
+    left: 18%;
+    border-radius: 60% 40% 42% 58% / 45% 55% 42% 58%;
+    animation-name: blob-b;
+    animation-duration: 15s;
+    animation-direction: reverse;
+}
+@keyframes fluid-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+@keyframes blob-a {
     0%,
     100% {
         transform: translate(0, 0) scale(1);
+        border-radius: 46% 54% 60% 40% / 50% 42% 58% 50%;
     }
     33% {
-        transform: translate(12%, -8%) scale(1.2);
+        transform: translate(28%, -20%) scale(1.3);
+        border-radius: 62% 38% 36% 64% / 38% 62% 40% 60%;
     }
     66% {
-        transform: translate(-5%, 10%) scale(0.9);
+        transform: translate(-18%, 24%) scale(0.78);
+        border-radius: 36% 64% 60% 40% / 64% 36% 62% 38%;
     }
 }
-@keyframes orb2 {
+@keyframes blob-b {
     0%,
     100% {
         transform: translate(0, 0) scale(1);
+        border-radius: 58% 42% 44% 56% / 40% 60% 40% 60%;
     }
     33% {
-        transform: translate(-10%, 5%) scale(1.15);
+        transform: translate(-26%, 18%) scale(1.28);
+        border-radius: 40% 60% 62% 38% / 60% 40% 64% 36%;
     }
     66% {
-        transform: translate(8%, -12%) scale(0.85);
+        transform: translate(22%, -28%) scale(0.75);
+        border-radius: 64% 36% 38% 62% / 40% 60% 38% 62%;
+    }
+}
+@keyframes blob-c {
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1) rotate(0deg);
+        border-radius: 40% 60% 55% 45% / 55% 45% 60% 40%;
+    }
+    25% {
+        transform: translate(18%, 22%) scale(1.22) rotate(35deg);
+        border-radius: 58% 42% 38% 62% / 38% 62% 42% 58%;
+    }
+    50% {
+        transform: translate(-22%, 10%) scale(0.82) rotate(-30deg);
+        border-radius: 42% 58% 64% 36% / 62% 38% 56% 44%;
+    }
+    75% {
+        transform: translate(10%, -22%) scale(1.14) rotate(20deg);
+        border-radius: 64% 36% 42% 58% / 42% 58% 62% 38%;
     }
 }
 .bg-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.28);
+    background: rgba(0, 0, 0, 0.18);
     z-index: 2;
 }
 

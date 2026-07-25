@@ -71,93 +71,96 @@ function formatDuration(ms: number) {
 </script>
 
 <template>
-    <div v-if="loading" class="flex items-center justify-center h-full">
-        <div
-            class="w-5 h-5 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin"
-        />
-    </div>
-
-    <!-- No playlist selected -->
-    <div
-        v-else-if="!playlist"
-        class="flex flex-col items-center justify-center h-full text-muted-foreground gap-3"
-    >
-        <Music :size="40" :stroke-width="1" />
-        <p class="text-sm">请从左侧选择一个歌单</p>
-    </div>
-
-    <!-- Gallery mode -->
-    <div v-else class="flex flex-col h-full">
-        <!-- Hero -->
-        <div class="hero">
-            <img
-                :src="`${playlist.coverImgUrl}?param=320y320`"
-                referrerpolicy="no-referrer"
-                class="hero-cover"
+    <div class="h-full">
+        <div v-if="loading" class="flex items-center justify-center h-full">
+            <div
+                class="w-5 h-5 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin"
             />
-            <div class="hero-info">
-                <p class="text-xs text-muted-foreground mb-1">歌单</p>
-                <h1 class="text-2xl font-bold">{{ playlist.name }}</h1>
-                <p class="text-sm text-muted-foreground mt-2">
-                    {{ playlist.trackCount }} 首 · {{ playlist.playCount.toLocaleString() }} 次播放
-                </p>
-                <div class="hero-actions">
-                    <Button size="sm" class="gap-1.5" @click="playAll">
-                        <Play :size="14" fill="currentColor" /> 播放全部
-                    </Button>
-                    <Button variant="outline" size="sm" class="gap-1.5" @click="shuffleAll">
-                        <Shuffle :size="14" /> 随机播放
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        :class="viewMode === 'list' ? 'bg-accent' : ''"
-                        @click="viewMode = viewMode === 'gallery' ? 'list' : 'gallery'"
-                    >
-                        <List :size="14" /> {{ viewMode === "gallery" ? "列表" : "画廊" }}
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        :disabled="loading"
-                        @click="loadPlaylist(Number(route.params.id))"
-                    >
-                        <RefreshCw :size="16" :class="loading && 'animate-spin'" />
-                    </Button>
+        </div>
+
+        <!-- No playlist selected -->
+        <div
+            v-else-if="!playlist"
+            class="flex flex-col items-center justify-center h-full text-muted-foreground gap-3"
+        >
+            <Music :size="40" :stroke-width="1" />
+            <p class="text-sm">请从左侧选择一个歌单</p>
+        </div>
+
+        <!-- Gallery mode -->
+        <div v-else class="flex flex-col h-full">
+            <!-- Hero -->
+            <div class="hero">
+                <img
+                    :src="`${playlist.coverImgUrl}?param=320y320`"
+                    referrerpolicy="no-referrer"
+                    class="hero-cover"
+                />
+                <div class="hero-info">
+                    <p class="text-xs text-muted-foreground mb-1">歌单</p>
+                    <h1 class="text-2xl font-bold">{{ playlist.name }}</h1>
+                    <p class="text-sm text-muted-foreground mt-2">
+                        {{ playlist.trackCount }} 首 ·
+                        {{ playlist.playCount.toLocaleString() }} 次播放
+                    </p>
+                    <div class="hero-actions">
+                        <Button size="sm" class="gap-1.5" @click="playAll">
+                            <Play :size="14" fill="currentColor" /> 播放全部
+                        </Button>
+                        <Button variant="outline" size="sm" class="gap-1.5" @click="shuffleAll">
+                            <Shuffle :size="14" /> 随机播放
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            :class="viewMode === 'list' ? 'bg-accent' : ''"
+                            @click="viewMode = viewMode === 'gallery' ? 'list' : 'gallery'"
+                        >
+                            <List :size="14" /> {{ viewMode === "gallery" ? "列表" : "画廊" }}
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            :disabled="loading"
+                            @click="loadPlaylist(Number(route.params.id))"
+                        >
+                            <RefreshCw :size="16" :class="loading && 'animate-spin'" />
+                        </Button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Gallery -->
-        <div v-if="viewMode === 'gallery'" class="flex-1 min-h-0 px-4 pb-4">
-            <SongGrid :key="galleryKey" :songs="songs" :has-more="false" @play="onPlay" />
-        </div>
+            <!-- Gallery -->
+            <div v-if="viewMode === 'gallery'" class="flex-1 min-h-0 px-4 pb-4">
+                <SongGrid :key="galleryKey" :songs="songs" :has-more="false" @play="onPlay" />
+            </div>
 
-        <!-- List -->
-        <div v-else class="flex-1 overflow-auto px-4 pb-4">
-            <div
-                v-for="(song, idx) in songs"
-                :key="song.id"
-                class="flex items-center gap-3 px-3 py-2.5 hover:bg-accent/30 transition-colors cursor-pointer rounded-xl"
-                @click="onPlay(song)"
-            >
-                <span class="text-xs text-muted-foreground w-5 text-right tabular-nums">{{
-                    idx + 1
-                }}</span>
-                <img
-                    :src="`${song.al.picUrl}?param=80y80`"
-                    referrerpolicy="no-referrer"
-                    class="w-10 h-10 rounded-lg object-cover"
-                />
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium truncate">{{ song.name }}</p>
-                    <p class="text-xs text-muted-foreground truncate">
-                        {{ song.ar.map((a) => a.name).join(" / ") }}
-                    </p>
+            <!-- List -->
+            <div v-else class="flex-1 overflow-auto px-4 pb-4">
+                <div
+                    v-for="(song, idx) in songs"
+                    :key="song.id"
+                    class="flex items-center gap-3 px-3 py-2.5 hover:bg-accent/30 transition-colors cursor-pointer rounded-xl"
+                    @click="onPlay(song)"
+                >
+                    <span class="text-xs text-muted-foreground w-5 text-right tabular-nums">{{
+                        idx + 1
+                    }}</span>
+                    <img
+                        :src="`${song.al.picUrl}?param=80y80`"
+                        referrerpolicy="no-referrer"
+                        class="w-10 h-10 rounded-lg object-cover"
+                    />
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium truncate">{{ song.name }}</p>
+                        <p class="text-xs text-muted-foreground truncate">
+                            {{ song.ar.map((a) => a.name).join(" / ") }}
+                        </p>
+                    </div>
+                    <span class="text-xs text-muted-foreground tabular-nums">{{
+                        formatDuration(song.dt)
+                    }}</span>
                 </div>
-                <span class="text-xs text-muted-foreground tabular-nums">{{
-                    formatDuration(song.dt)
-                }}</span>
             </div>
         </div>
     </div>

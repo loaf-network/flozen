@@ -9,7 +9,7 @@ const router = useRouter()
 const hovering = ref(false)
 
 const onPlayer = computed(() => route.name === "player")
-const artists = computed(() => player.currentSong?.ar?.map((a) => a.name).join("/") ?? "")
+const artists = computed(() => player.currentSong?.ar?.map((a) => a.name).join(" / ") ?? "")
 
 const currentLyric = computed(() => {
     const idx = player.currentLyricIndex
@@ -63,7 +63,11 @@ async function closeWin() {
         <div class="header-center">
             <div class="header-text" @mouseenter="hovering = true" @mouseleave="hovering = false">
                 <Transition name="hdr-text" mode="out-in">
-                    <p v-if="player.currentSong && !hovering" key="lyric" class="header-lyric">
+                    <p
+                        v-if="player.currentSong && !hovering"
+                        :key="`lyric-${player.currentLyricIndex}`"
+                        class="header-lyric"
+                    >
                         {{ currentLyric || "···" }}
                     </p>
                     <p v-else-if="player.currentSong" key="song" class="header-song-info">

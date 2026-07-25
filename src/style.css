@@ -165,19 +165,6 @@
     opacity: 0;
 }
 
-.fade-vertical-enter-active,
-.fade-vertical-leave-active {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.fade-vertical-enter-from {
-    opacity: 0;
-    transform: translateY(12px);
-}
-.fade-vertical-leave-to {
-    opacity: 0;
-    transform: translateY(-12px);
-}
-
 .slide-left-enter-active,
 .slide-left-leave-active {
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);

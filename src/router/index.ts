@@ -95,9 +95,9 @@ router.beforeEach((to) => {
         return
     }
 
-    // 同一父级下切换（如 Home ↔ Settings）用垂直过渡
+    // 同一父级下切换（如 Home ↔ Settings）用渐隐渐显
     if (toParent === fromParent && toParent !== "") {
-        to.meta.transition = "fade-vertical"
+        to.meta.transition = "fade"
         return
     }
 

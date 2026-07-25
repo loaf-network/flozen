@@ -63,7 +63,7 @@ function isActive(path: string) {
             <!-- 主内容 -->
             <main class="flex-1 overflow-auto no-scrollbar min-w-0">
                 <router-view v-slot="{ Component, route: r }">
-                    <Transition :name="(r.meta.transition as string) || 'fade'">
+                    <Transition :name="(r.meta.transition as string) || 'fade'" mode="out-in">
                         <component :is="Component" :key="r.fullPath" />
                     </Transition>
                 </router-view>
