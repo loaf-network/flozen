@@ -123,8 +123,12 @@ async function closeWin() {
         border-color 0.3s ease;
 }
 .app-header:not(.is-player) {
-    background: var(--background);
-    border-bottom-color: var(--border);
+    background: oklch(0.55 0.18 22 / 0.12);
+    border-bottom-color: oklch(0.55 0.18 22 / 0.15);
+}
+.dark .app-header:not(.is-player) {
+    background: oklch(0.62 0.17 22 / 0.08);
+    border-bottom-color: oklch(0.62 0.17 22 / 0.12);
 }
 .header-left {
     flex-shrink: 0;
