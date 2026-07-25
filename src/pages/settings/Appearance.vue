@@ -3,7 +3,6 @@ import { ref, onMounted } from "vue"
 import { useRouter } from "vue-router"
 import { ArrowLeft, Check, Moon, Sun, Monitor } from "@lucide/vue"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { saveConfig } from "@/lib/store"
 
 const router = useRouter()
@@ -42,7 +41,7 @@ const themes = [
 </script>
 
 <template>
-    <div class="p-6 max-w-xl mx-auto">
+    <div class="p-6">
         <div class="flex items-center gap-3 mb-6">
             <Button variant="ghost" size="icon-sm" @click="router.push('/app/settings')">
                 <ArrowLeft :size="18" />
@@ -51,13 +50,15 @@ const themes = [
         </div>
 
         <p class="text-xs font-medium text-muted-foreground mb-2 px-1">主题</p>
-        <Card class="py-1 gap-1 overflow-hidden">
+        <div class="flex flex-col gap-2">
             <button
                 v-for="t in themes"
                 :key="t.id"
                 :class="[
-                    'flex items-center gap-4 w-full px-4 py-3.5 text-left transition-all duration-200 rounded-xl',
-                    mode === t.id ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/40',
+                    'flex items-center gap-4 w-full px-4 py-3.5 text-left transition-all duration-200 rounded-xl border',
+                    mode === t.id
+                        ? 'bg-accent border-border'
+                        : 'border-transparent hover:bg-accent/40',
                 ]"
                 @click="setMode(t.id)"
             >
@@ -82,6 +83,6 @@ const themes = [
                     <Check :size="12" class="text-primary-foreground" :stroke-width="3" />
                 </div>
             </button>
-        </Card>
+        </div>
     </div>
 </template>

@@ -121,16 +121,16 @@ function formatDuration(ms: number) {
         </div>
 
         <!-- Gallery -->
-        <div v-if="viewMode === 'gallery'" class="flex-1 min-h-0">
+        <div v-if="viewMode === 'gallery'" class="flex-1 min-h-0 px-4 pb-4">
             <SongGrid :key="galleryKey" :songs="songs" :has-more="false" @play="onPlay" />
         </div>
 
         <!-- List -->
-        <div v-else class="flex-1 overflow-auto">
+        <div v-else class="flex-1 overflow-auto px-4 pb-4">
             <div
                 v-for="(song, idx) in songs"
                 :key="song.id"
-                class="flex items-center gap-3 px-4 py-2.5 hover:bg-accent/30 transition-colors cursor-pointer border-b border-border/30"
+                class="flex items-center gap-3 px-3 py-2.5 hover:bg-accent/30 transition-colors cursor-pointer rounded-xl"
                 @click="onPlay(song)"
             >
                 <span class="text-xs text-muted-foreground w-5 text-right tabular-nums">{{

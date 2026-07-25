@@ -91,7 +91,7 @@ onMounted(() => {
                         variant="ghost"
                         :size="'icon' as any"
                         @click="setVolume(player.volume === 0 ? 0.7 : 0)"
-                        class="peer"
+                        class="peer !text-white/60 hover:!text-white hover:!bg-white/10"
                     >
                         <component :is="VolIcon" :size="18" />
                     </Button>
@@ -107,7 +107,11 @@ onMounted(() => {
                 <Button
                     variant="ghost"
                     :size="'icon' as any"
-                    :class="isModeActive && '!text-primary'"
+                    :class="
+                        isModeActive
+                            ? '!text-primary hover:!text-primary'
+                            : '!text-white/60 hover:!text-white hover:!bg-white/10'
+                    "
                     @click="cyclePlayMode"
                 >
                     <component :is="ModeIcon" :size="18" />
@@ -116,24 +120,43 @@ onMounted(() => {
 
             <!-- 中：播放控制 -->
             <div class="flex items-center gap-3">
-                <Button variant="ghost" :size="'icon' as any" @click="prev">
+                <Button
+                    variant="ghost"
+                    :size="'icon' as any"
+                    class="!text-white/60 hover:!text-white hover:!bg-white/10"
+                    @click="prev"
+                >
                     <SkipBack :size="24" fill="currentColor" />
                 </Button>
                 <Button size="lg" @click="toggle">
                     <Pause v-if="player.playing" :size="28" fill="currentColor" />
                     <Play v-else :size="28" fill="currentColor" class="ml-0.5" />
                 </Button>
-                <Button variant="ghost" :size="'icon' as any" @click="next">
+                <Button
+                    variant="ghost"
+                    :size="'icon' as any"
+                    class="!text-white/60 hover:!text-white hover:!bg-white/10"
+                    @click="next"
+                >
                     <SkipForward :size="24" fill="currentColor" />
                 </Button>
             </div>
 
             <!-- 右：爱心 + 列表 -->
             <div class="flex items-center gap-1">
-                <Button variant="ghost" :size="'icon' as any">
+                <Button
+                    variant="ghost"
+                    :size="'icon' as any"
+                    class="!text-white/60 hover:!text-white hover:!bg-white/10"
+                >
                     <Heart :size="18" />
                 </Button>
-                <Button variant="ghost" :size="'icon' as any" title="播放列表">
+                <Button
+                    variant="ghost"
+                    :size="'icon' as any"
+                    class="!text-white/60 hover:!text-white hover:!bg-white/10"
+                    title="播放列表"
+                >
                     <ListMusic :size="18" />
                 </Button>
             </div>

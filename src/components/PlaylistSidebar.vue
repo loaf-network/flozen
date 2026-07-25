@@ -135,6 +135,9 @@ async function create() {
     flex: 1;
     overflow-y: auto;
     padding: 0 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .sidebar-item {
@@ -142,9 +145,9 @@ async function create() {
     align-items: center;
     gap: 10px;
     width: 100%;
-    padding: 8px 8px;
+    padding: 10px 8px;
     border-radius: 10px;
-    border: none;
+    border: 1px solid transparent;
     background: transparent;
     cursor: pointer;
     text-align: left;
@@ -152,9 +155,11 @@ async function create() {
 }
 .sidebar-item:hover {
     background: var(--accent);
+    border-color: var(--border);
 }
 .sidebar-item--active {
     background: var(--accent);
+    border-color: var(--border);
 }
 .sidebar-item--active .sidebar-name {
     color: var(--primary);

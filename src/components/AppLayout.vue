@@ -58,12 +58,12 @@ function isActive(path: string) {
             </aside>
 
             <!-- 歌单侧边栏 -->
-            <PlaylistSidebar v-if="showPlaylistSidebar" />
+            <PlaylistSidebar v-show="showPlaylistSidebar" />
 
             <!-- 主内容 -->
             <main class="flex-1 overflow-auto no-scrollbar min-w-0">
                 <router-view v-slot="{ Component, route: r }">
-                    <Transition :name="(r.meta.transition as string) || 'fade'" mode="out-in">
+                    <Transition :name="(r.meta.transition as string) || 'fade'">
                         <component :is="Component" :key="r.fullPath" />
                     </Transition>
                 </router-view>

@@ -163,6 +163,7 @@ const album = computed(() => player.currentSong?.al?.name ?? "")
     position: relative;
     overflow: hidden;
     min-width: 0;
+    background: #000;
 }
 
 /* ── 背景 ── */
