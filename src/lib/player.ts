@@ -110,6 +110,11 @@ function recordHistory(song: SearchSong) {
     saveHistory([...playHistory])
 }
 
+export function clearHistory() {
+    playHistory.length = 0
+    saveHistory([])
+}
+
 async function restorePlayerState() {
     const [snap, hist] = await Promise.all([loadPlayerSnapshot(), loadHistory()])
     playHistory.push(...hist)

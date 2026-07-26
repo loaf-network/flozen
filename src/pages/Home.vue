@@ -1,13 +1,19 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router"
-import { Search, Settings, Music } from "@lucide/vue"
-import { playHistory, play } from "@/lib/player"
+import { Search, Settings, Music, Trash2 } from "@lucide/vue"
+import { toast } from "vue-sonner"
+import { playHistory, play, clearHistory } from "@/lib/player"
 
 const router = useRouter()
 
 function playFromHistory(index: number) {
     play(playHistory[index].song)
     router.push("/player")
+}
+
+function onClearHistory() {
+    clearHistory()
+    toast.success("已清除播放记录")
 }
 </script>
 
@@ -44,7 +50,18 @@ function playFromHistory(index: number) {
         </div>
 
         <!-- 最近播放 -->
-        <p class="text-xs font-medium text-muted-foreground mb-3">最近播放</p>
+        <div class="flex items-center justify-between mb-3">
+            <p class="text-xs font-medium text-muted-foreground">最近播放</p>
+            <button
+                v-if="playHistory.length"
+                class="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-lg hover:bg-accent/40"
+                title="清除播放记录"
+                @click="onClearHistory"
+            >
+                <Trash2 :size="13" />
+                清除
+            </button>
+        </div>
         <div v-if="playHistory.length" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
             <button
                 v-for="(entry, i) in playHistory.slice(0, 12)"
