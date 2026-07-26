@@ -8,6 +8,7 @@ import "vue-sonner/style.css"
 
 const route = useRoute()
 const onPlayer = computed(() => route.name === "player")
+const onSplash = computed(() => route.name === "splash")
 const transitionName = computed(() => (route.meta.transition as string) || "fade")
 const transitionMode = computed(() =>
     transitionName.value.startsWith("player") ? undefined : "out-in",
@@ -37,7 +38,7 @@ onMounted(() => {
 
 <template>
     <div class="app-root">
-        <AppHeader />
+        <AppHeader v-if="!onSplash" />
         <div class="app-content" :class="{ 'is-player': onPlayer }">
             <router-view v-slot="{ Component }">
                 <Transition :name="transitionName" :mode="transitionMode">

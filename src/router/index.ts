@@ -5,6 +5,7 @@ const router = createRouter({
     routes: [
         {
             path: "/",
+            name: "splash",
             component: () => import("@/components/SplashScreen.vue"),
         },
         {

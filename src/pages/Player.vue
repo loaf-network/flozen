@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, nextTick, watch, onMounted } from "vue"
+import { computed, ref, nextTick, watch, onMounted, onUnmounted } from "vue"
 import { Music } from "@lucide/vue"
-import { player, seek } from "@/lib/player"
+import { player, seek, toggle } from "@/lib/player"
 import { loadConfig } from "@/lib/store"
 import PlayerControls from "@/components/player/PlayerControls.vue"
 
@@ -33,12 +33,33 @@ function autoScroll(smooth = true) {
     })
 }
 
+function onKeydown(e: KeyboardEvent) {
+    const target = e.target as HTMLElement
+    if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)
+        return
+    if (e.code === "Space") {
+        e.preventDefault()
+        toggle()
+    } else if (e.code === "ArrowLeft") {
+        e.preventDefault()
+        seek(Math.max(0, player.currentTime - 5))
+    } else if (e.code === "ArrowRight") {
+        e.preventDefault()
+        seek(Math.min(player.duration, player.currentTime + 5))
+    }
+}
+
 onMounted(() => {
     loadConfig().then((cfg) => {
         fluidBg.value = cfg.fluidBg
     })
     // 进入播放页先把当前歌词瞬时居中
     autoScroll(false)
+    window.addEventListener("keydown", onKeydown)
+})
+
+onUnmounted(() => {
+    window.removeEventListener("keydown", onKeydown)
 })
 
 watch(currentIdx, () => autoScroll())

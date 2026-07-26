@@ -8,10 +8,6 @@ import { getNcmAccount } from "@/lib/api"
 
 const router = useRouter()
 
-function navigate(to: string) {
-    router.replace(to)
-}
-
 onMounted(async () => {
     const config = await loadConfig()
 
@@ -32,28 +28,17 @@ onMounted(async () => {
         }
     }
 
-    navigate(config.onboarded ? "/app" : "/landing")
+    router.replace(config.onboarded ? "/app" : "/landing")
 })
 </script>
 
 <template>
     <div class="splash">
-        <div class="splash-content">
-            <!-- Logo -->
+        <div class="splash-inner">
             <div class="splash-logo">
-                <div class="splash-logo-inner">
-                    <Music :size="28" :stroke-width="1.2" class="text-foreground" />
-                </div>
+                <Music :size="26" :stroke-width="1.5" />
             </div>
-
-            <!-- 装饰线 -->
-            <div class="splash-line" />
-
-            <!-- 品牌名 -->
-            <h1 class="splash-title">Flozen</h1>
-
-            <!-- 副标题 -->
-            <p class="splash-sub">Music Player</p>
+            <p class="splash-title">Flozen</p>
         </div>
     </div>
 </template>
@@ -68,93 +53,49 @@ onMounted(async () => {
     background: #0a0807;
 }
 
-.splash-content {
+.splash-inner {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0;
-    animation: splash-enter 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    gap: 16px;
+    animation: splash-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* ─── Logo ─── */
 .splash-logo {
-    width: 56px;
-    height: 56px;
-    border-radius: 16px;
-    border: 1px solid rgba(200, 60, 40, 0.12);
-    background: rgba(200, 60, 40, 0.04);
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: logo-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
-}
-.splash-logo-inner {
-    animation: breathe 2.4s ease-in-out infinite;
-}
-
-/* ─── 装饰线 ─── */
-.splash-line {
-    width: 1px;
-    height: 28px;
-    margin: 20px 0;
-    background: linear-gradient(to bottom, rgba(200, 60, 40, 0.18), transparent);
-    animation: line-enter 0.5s ease 0.3s both;
+    color: #fff;
+    background: linear-gradient(135deg, oklch(0.62 0.17 22), oklch(0.66 0.16 45));
+    box-shadow: 0 8px 32px oklch(0.62 0.17 22 / 0.35);
+    animation: splash-breathe 2.2s ease-in-out infinite;
 }
 
-/* ─── 标题 ─── */
 .splash-title {
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: normal;
-    color: var(--foreground);
-    animation: text-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
 }
 
-/* ─── 副标题 ─── */
-.splash-sub {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    color: var(--muted-foreground);
-    opacity: 0.5;
-    margin-top: 6px;
-    animation: text-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+@keyframes splash-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
 }
 
-/* ─── 动画 ─── */
-@keyframes splash-enter {
-    from {
-        opacity: 0;
-        transform: translateY(12px) scale(0.96);
-    }
-}
-@keyframes logo-enter {
-    from {
-        opacity: 0;
-        transform: scale(0.8);
-    }
-}
-@keyframes line-enter {
-    from {
-        opacity: 0;
-        transform: scaleY(0);
-    }
-}
-@keyframes text-enter {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
-}
-@keyframes breathe {
+@keyframes splash-breathe {
     0%,
     100% {
-        opacity: 0.7;
         transform: scale(1);
+        box-shadow: 0 8px 32px oklch(0.62 0.17 22 / 0.35);
     }
     50% {
-        opacity: 1;
-        transform: scale(1.04);
+        transform: scale(1.05);
+        box-shadow: 0 8px 44px oklch(0.62 0.17 22 / 0.55);
     }
 }
 </style>
