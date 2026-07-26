@@ -98,6 +98,7 @@
 - **首页最近播放骨架屏**：player.ts 导出 `historyLoaded` ref（restorePlayerState 加载历史后置 true）；Home.vue 未加载时显示 8 个 Skeleton 占位（同网格布局），加载完成后再判断列表/空态
 - **播放页键盘控制**：Player.vue onMounted 挂 window keydown（onUnmounted 移除）——空格 `toggle()` 播放/暂停、左右方向键 `seek(±5s)`；均 `preventDefault` 防页面滚动/按钮误触发，输入框/contentEditable 焦点时跳过
 - **SplashScreen 简化重做**：仅保留品牌色渐变 Logo（呼吸辉光动画）+ Flozen 字标，删除装饰线/副标题；根路由加 `name: "splash"`，App.vue `v-if="!onSplash"` 隐藏 AppHeader（启动页无头部）
+- **下一首预加载 + 智能随机**（player.ts）：rAF 循环中距结束 <20s 触发 `preloadNext()`——按 `pickNextIndex()` 预选下一首（随机模式优先从 `playedShuffleIds` 未含的歌里随机，全放完则重置一轮；顺序模式按队列顺序），并行请求 URL+歌词缓存到 `preloaded`，另用静音 `preloadAudio` 预热浏览器缓冲；`next()` 直接用预选索引，`loadAndPlay` 命中缓存则秒切（跳过网络请求）。失效时机：切歌/模式切换/队列增删移动/setQueue/clearQueue 调 `invalidatePlan()`，切音质丢弃 `preloaded`；预加载失败记 `preloadFailedId` 防重试风暴
 - **歌词进入居中**：Player.vue `autoScroll(smooth = true)`，onMounted 时 `autoScroll(false)` 瞬时居中当前行；watch 回调需显式 `() => autoScroll()`，避免 watch 新值误传给 smooth 参数
 - **播放状态持久化**：`src/lib/playerPersist.ts`（store 文件 `flozen-player.json`，键 `snapshot`/`history`）；player.ts 启动时 `restorePlayerState()` 恢复队列/索引/音量/音质/循环/随机/进度（不自动播放，`resumeTime` + `pendingSeek` 在 loadedmetadata 时 seek，恢复后首次 play() 检测 `!audio.src` 走续播分支）；保存时机：watch 队列等字段 debounce 800ms + rAF 每 10s 存进度 + pause 时立存；播放历史 `playHistory`（去重置顶、上限 100 条），loadAndPlay 成功即 `recordHistory`；Home.vue 最近播放已接入（前 8 条，点击播放并跳转 /player）
 

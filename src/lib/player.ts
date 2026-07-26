@@ -86,6 +86,77 @@ let pendingSeek = 0
 let saveTimer: ReturnType<typeof setTimeout> | null = null
 let lastTimeSave = 0
 
+// ── 下一首预加载 + 智能随机 ──
+const playedShuffleIds = new Set<number>()
+let plannedNextIndex = -1
+let plannedNextId = -1
+let preloaded: { songId: number; url: string; lyrics: LyricLine[] } | null = null
+let preloadingId = -1
+let preloadFailedId = -1
+const preloadAudio = new Audio()
+preloadAudio.preload = "auto"
+preloadAudio.muted = true
+
+function invalidatePlan() {
+    plannedNextIndex = -1
+    plannedNextId = -1
+}
+
+// 智能随机：优先从未播放过的歌中随机，全部播过则重置一轮
+function pickNextIndex(): number {
+    const n = player.queue.length
+    if (n === 0) return -1
+    if (player.shuffle) {
+        if (n === 1) return 0
+        let candidates = player.queue
+            .map((_, i) => i)
+            .filter((i) => i !== player.queueIndex && !playedShuffleIds.has(player.queue[i].id))
+        if (candidates.length === 0) {
+            playedShuffleIds.clear()
+            if (player.currentSong) playedShuffleIds.add(player.currentSong.id)
+            candidates = player.queue.map((_, i) => i).filter((i) => i !== player.queueIndex)
+        }
+        return candidates[Math.floor(Math.random() * candidates.length)]
+    }
+    const nextIdx = (player.queueIndex + 1) % n
+    if (nextIdx === 0 && player.repeatMode === "none") return -1
+    return nextIdx
+}
+
+async function preloadNext() {
+    if (player.queue.length === 0 || player.repeatMode === "one") return
+    // 计划失效（队列变动/尚未计划）时重新预选
+    if (plannedNextIndex === -1 || player.queue[plannedNextIndex]?.id !== plannedNextId) {
+        plannedNextIndex = pickNextIndex()
+        plannedNextId = player.queue[plannedNextIndex]?.id ?? -1
+    }
+    if (plannedNextIndex === -1) return
+    const song = player.queue[plannedNextIndex]
+    if (!song) return
+    if (preloaded?.songId === song.id || preloadingId === song.id || preloadFailedId === song.id)
+        return
+    preloadingId = song.id
+    try {
+        const config = await loadConfig()
+        const [urlRes, lyricRes] = await Promise.all([
+            ncmSongUrl(song.id, player.quality, config.ncmCookie),
+            ncmLyric(song.id),
+        ])
+        const url = urlRes.data?.[0]?.url
+        if (url) {
+            preloaded = { songId: song.id, url, lyrics: parseLrc(lyricRes.lrc?.lyric ?? "") }
+            // 预热音频缓冲，切歌时命中浏览器缓存
+            preloadAudio.src = url
+        } else {
+            preloadFailedId = song.id
+        }
+    } catch {
+        preloadFailedId = song.id
+    } finally {
+        preloadingId = -1
+    }
+}
+
 function snapshot(): PlayerSnapshot {
     return {
         queue: [...player.queue],
@@ -166,6 +237,10 @@ function updateTime() {
         lastTimeSave = now
         savePlayerSnapshot(snapshot())
     }
+    // 快结束时提前准备下一首（音频 + 歌词）
+    if (player.duration > 0 && player.duration - player.currentTime < 20) {
+        preloadNext()
+    }
     animFrame = requestAnimationFrame(updateTime)
 }
 
@@ -200,7 +275,22 @@ audio.addEventListener("error", () => {
 async function loadAndPlay(song: SearchSong, seekTo = 0) {
     player.loading = true
     pendingSeek = seekTo
+    playedShuffleIds.add(song.id)
+    invalidatePlan()
+    preloadFailedId = -1
     try {
+        const cached = preloaded?.songId === song.id ? preloaded : null
+        if (cached) {
+            preloaded = null
+            audio.src = cached.url
+            audio.play().catch(() => {})
+            syncMediaMetadata(song)
+            setWindowTitle(song)
+            recordHistory(song)
+            player.lyrics = cached.lyrics
+            player.currentLyricIndex = getCurrentLine(player.lyrics, 0)
+            return
+        }
         const config = await loadConfig()
         const urlRes = await ncmSongUrl(song.id, player.quality, config.ncmCookie)
         const url = urlRes.data?.[0]?.url
@@ -216,9 +306,7 @@ async function loadAndPlay(song: SearchSong, seekTo = 0) {
 
         const lyricRes = await ncmLyric(song.id)
         const lrc = lyricRes.lrc?.lyric ?? ""
-        console.log("Lyric raw:", lrc.slice(0, 200))
         player.lyrics = parseLrc(lrc)
-        console.log("Lyric parsed lines:", player.lyrics.length)
         player.currentLyricIndex = getCurrentLine(player.lyrics, 0)
     } catch (err) {
         console.error("Load failed:", err)
@@ -264,17 +352,16 @@ export function next() {
         loadAndPlay(player.currentSong)
         return
     }
-    if (player.shuffle) {
-        const nextIdx = Math.floor(Math.random() * player.queue.length)
-        player.queueIndex = nextIdx
-    } else {
-        player.queueIndex = (player.queueIndex + 1) % player.queue.length
-        if (player.queueIndex === 0 && player.repeatMode === "none") {
-            pause()
-            return
-        }
+    const idx =
+        plannedNextIndex !== -1 && player.queue[plannedNextIndex]?.id === plannedNextId
+            ? plannedNextIndex
+            : pickNextIndex()
+    if (idx === -1) {
+        pause()
+        return
     }
-    const song = player.queue[player.queueIndex]
+    player.queueIndex = idx
+    const song = player.queue[idx]
     if (song) {
         player.currentSong = song
         loadAndPlay(song)
@@ -307,6 +394,7 @@ export function setVolume(vol: number) {
 
 export function setQuality(q: PlayerState["quality"]) {
     player.quality = q
+    preloaded = null
     if (player.currentSong) loadAndPlay(player.currentSong)
 }
 
@@ -314,10 +402,12 @@ export function toggleRepeat() {
     const modes: PlayerState["repeatMode"][] = ["none", "all", "one"]
     const idx = modes.indexOf(player.repeatMode)
     player.repeatMode = modes[(idx + 1) % modes.length]
+    invalidatePlan()
 }
 
 export function toggleShuffle() {
     player.shuffle = !player.shuffle
+    invalidatePlan()
 }
 
 export function cyclePlayMode() {
@@ -336,6 +426,7 @@ export function cyclePlayMode() {
         player.shuffle = true
         player.repeatMode = "none"
     }
+    invalidatePlan()
 }
 
 export function addToQueue(song: SearchSong) {
@@ -381,6 +472,7 @@ export function moveQueueItem(from: number, to: number) {
     } else if (from > player.queueIndex && to <= player.queueIndex) {
         player.queueIndex++
     }
+    invalidatePlan()
 }
 
 export function clearQueue() {
@@ -393,11 +485,16 @@ export function clearQueue() {
     audio.src = ""
     clearMedia()
     setWindowTitle(null)
+    playedShuffleIds.clear()
+    invalidatePlan()
+    preloaded = null
 }
 
 export function setQueue(songs: SearchSong[], startIndex = 0) {
     player.queue = songs
     player.queueIndex = startIndex
+    playedShuffleIds.clear()
+    invalidatePlan()
     if (songs.length > 0) {
         player.currentSong = songs[startIndex]
         loadAndPlay(songs[startIndex])
