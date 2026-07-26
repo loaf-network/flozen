@@ -21,6 +21,7 @@ function onToggleFluid(checked: boolean) {
 
 const gpus = ref<GpuInfo[]>([])
 const useDiscrete = ref(false)
+const detecting = ref(true)
 const discreteGpu = computed(() => gpus.value.find((g) => g.discrete))
 
 async function onToggleDiscrete(checked: boolean) {
@@ -65,11 +66,10 @@ onMounted(() => {
         if (mode.value === "auto") applyTheme("auto")
     })
 
-    listGpus().then((list) => {
+    Promise.all([listGpus(), getGpuPreference()]).then(([list, pref]) => {
         gpus.value = list
-    })
-    getGpuPreference().then((pref) => {
         useDiscrete.value = pref === 2
+        detecting.value = false
     })
     loadConfig().then((cfg) => {
         fluidBg.value = cfg.fluidBg
@@ -93,12 +93,12 @@ const themes = [
         </div>
 
         <p class="text-xs font-medium text-muted-foreground mb-2 px-1">主题</p>
-        <div class="flex flex-col gap-2">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <button
                 v-for="t in themes"
                 :key="t.id"
                 :class="[
-                    'flex items-center gap-4 w-full px-4 py-3.5 text-left transition-all duration-200 rounded-xl border',
+                    'relative flex flex-col items-start gap-3 px-4 py-4 text-left transition-all duration-200 rounded-xl border',
                     mode === t.id
                         ? 'bg-accent border-border'
                         : 'border-transparent hover:bg-accent/40',
@@ -115,13 +115,13 @@ const themes = [
                 >
                     <component :is="t.icon" :size="18" />
                 </div>
-                <div class="flex-1 min-w-0">
+                <div class="min-w-0">
                     <p class="text-sm font-medium leading-snug">{{ t.label }}</p>
                     <p class="text-xs text-muted-foreground mt-0.5 leading-relaxed">{{ t.desc }}</p>
                 </div>
                 <div
                     v-if="mode === t.id"
-                    class="size-5 rounded-full bg-primary flex items-center justify-center shrink-0"
+                    class="absolute top-3 right-3 size-5 rounded-full bg-primary flex items-center justify-center"
                 >
                     <Check :size="12" class="text-primary-foreground" :stroke-width="3" />
                 </div>
@@ -144,7 +144,7 @@ const themes = [
             <Switch :model-value="fluidBg" @update:model-value="onToggleFluid" />
         </div>
 
-        <template v-if="gpus.length">
+        <template v-if="detecting || gpus.length">
             <p class="text-xs font-medium text-muted-foreground mt-6 mb-2 px-1">渲染</p>
             <div class="flex items-center gap-4 w-full px-4 py-3.5 rounded-xl border border-border">
                 <div
@@ -156,15 +156,17 @@ const themes = [
                     <p class="text-sm font-medium leading-snug">使用独立显卡渲染</p>
                     <p class="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                         {{
-                            discreteGpu
-                                ? `检测到 ${discreteGpu.name}，开启后重启应用生效`
-                                : "未检测到独立显卡，将使用核显渲染"
+                            detecting
+                                ? "正在检测显卡..."
+                                : discreteGpu
+                                  ? `检测到 ${discreteGpu.name}，开启后重启应用生效`
+                                  : "未检测到独立显卡，将使用核显渲染"
                         }}
                     </p>
                 </div>
                 <Switch
                     :model-value="useDiscrete"
-                    :disabled="!discreteGpu"
+                    :disabled="detecting"
                     @update:model-value="onToggleDiscrete"
                 />
             </div>
