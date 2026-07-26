@@ -91,7 +91,11 @@
 - **重要（WebView2 独显）**：注册表 GpuPreference 只影响主进程，WebView2 渲染在独立子进程（msedgewebview2.exe）不受影响！必须在 WebView 创建前设置环境变量 `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--force_high_performance_gpu`（WebView2 运行时 145+ 支持，见 lib.rs `apply_gpu_preference_env`，run() 开头按注册表偏好注入）
 - **播放页按钮恒白**：`.is-player` 的返回键/窗口按钮删除了浅色模式黑色覆盖规则，无论浅/深色主题均为白色（播放页背景恒为深色）
 - **播放页液体背景开关**：store.ts 配置新增 `fluidBg`（默认 true）；Appearance.vue「播放页」区块 Switch；Player.vue onMounted 读配置，关闭时 `v-if` 不渲染 .fluid 色团（保留静态模糊封面背景）
-- **首页最近播放自适应**：`grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`，最多显示 12 条
+- **首页最近播放自适应**：`grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`，最多显示 12 条；标题行右侧清除键（Trash2 + 文字，仅有记录时显示），player.ts `clearHistory()` 清空并持久化
+- **播放页无歌曲占位**：封面区 `v-else` 渲染同尺寸 `.cover--empty`（暖灰渐变底 + 居中 Music 图标），信息区显示「未在播放」占位文案，避免左列无歌曲时布局变形
+- **独显开关检测态**：Appearance.vue `detecting` 状态——检测中区块显示「正在检测显卡...」且 Switch 禁用，检测完成后启用（无独显时切换会 toast 警告并回退）；默认关闭
+- **主题选择三列自适应**：Appearance.vue 主题区由垂直列表改为 `grid grid-cols-1 sm:grid-cols-3 gap-2`，卡片竖排（图标上、标题描述下），选中勾标绝对定位右上角
+- **歌词进入居中**：Player.vue `autoScroll(smooth = true)`，onMounted 时 `autoScroll(false)` 瞬时居中当前行；watch 回调需显式 `() => autoScroll()`，避免 watch 新值误传给 smooth 参数
 - **播放状态持久化**：`src/lib/playerPersist.ts`（store 文件 `flozen-player.json`，键 `snapshot`/`history`）；player.ts 启动时 `restorePlayerState()` 恢复队列/索引/音量/音质/循环/随机/进度（不自动播放，`resumeTime` + `pendingSeek` 在 loadedmetadata 时 seek，恢复后首次 play() 检测 `!audio.src` 走续播分支）；保存时机：watch 队列等字段 debounce 800ms + rAF 每 10s 存进度 + pause 时立存；播放历史 `playHistory`（去重置顶、上限 100 条），loadAndPlay 成功即 `recordHistory`；Home.vue 最近播放已接入（前 8 条，点击播放并跳转 /player）
 
 ### 项目结构 (模块化)

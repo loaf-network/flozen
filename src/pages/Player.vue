@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, nextTick, watch, onMounted } from "vue"
+import { Music } from "@lucide/vue"
 import { player, seek } from "@/lib/player"
 import { loadConfig } from "@/lib/store"
 import PlayerControls from "@/components/player/PlayerControls.vue"
 
 const fluidBg = ref(true)
-onMounted(async () => {
-    fluidBg.value = (await loadConfig()).fluidBg
-})
 
 const lyricsEl = ref<HTMLDivElement>()
 const userScrolling = ref(false)
@@ -23,7 +21,7 @@ let returnTimer: ReturnType<typeof setTimeout> | null = null
 const allLines = computed(() => player.lyrics)
 const currentIdx = computed(() => player.currentLyricIndex)
 
-function autoScroll() {
+function autoScroll(smooth = true) {
     if (userScrolling.value || !lyricsEl.value) return
     nextTick(() => {
         const container = lyricsEl.value
@@ -31,12 +29,20 @@ function autoScroll() {
         if (!container || !el) return
         // 不用 scrollIntoView：它会连带滚动外层页面
         const top = el.offsetTop - container.clientHeight / 2 + el.offsetHeight / 2
-        container.scrollTo({ top, behavior: "smooth" })
+        container.scrollTo({ top, behavior: smooth ? "smooth" : "auto" })
     })
 }
 
-watch(currentIdx, autoScroll)
-watch(allLines, () => nextTick(autoScroll))
+onMounted(() => {
+    loadConfig().then((cfg) => {
+        fluidBg.value = cfg.fluidBg
+    })
+    // 进入播放页先把当前歌词瞬时居中
+    autoScroll(false)
+})
+
+watch(currentIdx, () => autoScroll())
+watch(allLines, () => nextTick(() => autoScroll()))
 
 function onScroll() {
     userScrolling.value = true
@@ -138,10 +144,17 @@ const album = computed(() => player.currentSong?.al?.name ?? "")
                     referrerpolicy="no-referrer"
                 />
             </div>
+            <div v-else class="cover cover--empty">
+                <Music :size="72" :stroke-width="1" />
+            </div>
             <div v-if="player.currentSong" class="info">
                 <p class="name">{{ player.currentSong.name }}</p>
                 <p class="artist">{{ artists }}</p>
                 <p v-if="album" class="album">{{ album }}</p>
+            </div>
+            <div v-else class="info">
+                <p class="name name--empty">未在播放</p>
+                <p class="artist">从搜索或歌单挑一首歌开始吧</p>
             </div>
             <div class="ctrl">
                 <PlayerControls />
@@ -351,6 +364,16 @@ const album = computed(() => player.currentSong?.al?.name ?? "")
     height: 100%;
     object-fit: cover;
     display: block;
+}
+.cover--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+    color: rgba(255, 255, 255, 0.18);
+}
+.name--empty {
+    color: rgba(255, 255, 255, 0.6);
 }
 .info {
     display: flex;
