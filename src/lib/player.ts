@@ -1,4 +1,4 @@
-import { reactive, watch } from "vue"
+import { reactive, ref, watch } from "vue"
 import { ncmSongUrl, ncmLyric, type SearchSong } from "./api"
 import { parseLrc, getCurrentLine, type LyricLine } from "./lyrics"
 import { loadConfig } from "./store"
@@ -79,6 +79,7 @@ export const player = reactive<PlayerState>({
 
 // ── 持久化：播放历史 + 队列快照 ──
 export const playHistory = reactive<HistoryEntry[]>([])
+export const historyLoaded = ref(false)
 
 let resumeTime = 0
 let pendingSeek = 0
@@ -118,6 +119,7 @@ export function clearHistory() {
 async function restorePlayerState() {
     const [snap, hist] = await Promise.all([loadPlayerSnapshot(), loadHistory()])
     playHistory.push(...hist)
+    historyLoaded.value = true
     if (snap && snap.queue.length > 0) {
         player.queue = snap.queue
         player.queueIndex = Math.min(Math.max(snap.queueIndex, 0), snap.queue.length - 1)

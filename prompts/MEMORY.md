@@ -28,7 +28,7 @@
 ## 经验积累
 
 - shadcn-vue 组件安装: `npx shadcn-vue@latest add <组件名> --yes`
-- 已安装: button, card, checkbox, radio-group, badge, separator, label, switch, avatar, sonner, input
+- 已安装: button, card, checkbox, radio-group, badge, separator, label, switch, avatar, sonner, input, skeleton
 - vue-router v4，安装: `npm install vue-router@4 --legacy-peer-deps`
 - Tauri Store: `@tauri-apps/plugin-store` (npm) + `tauri-plugin-store` (Rust)
 - NCM API: `VITE_API_NCM_BASE` 环境变量
@@ -95,6 +95,7 @@
 - **播放页无歌曲占位**：封面区 `v-else` 渲染同尺寸 `.cover--empty`（暖灰渐变底 + 居中 Music 图标），信息区显示「未在播放」占位文案，避免左列无歌曲时布局变形
 - **独显开关检测态**：Appearance.vue `detecting` 状态——检测中区块显示「正在检测显卡...」且 Switch 禁用，检测完成后启用（无独显时切换会 toast 警告并回退）；默认关闭
 - **主题选择三列自适应**：Appearance.vue 主题区由垂直列表改为 `grid grid-cols-1 sm:grid-cols-3 gap-2`，卡片竖排（图标上、标题描述下），选中勾标绝对定位右上角
+- **首页最近播放骨架屏**：player.ts 导出 `historyLoaded` ref（restorePlayerState 加载历史后置 true）；Home.vue 未加载时显示 8 个 Skeleton 占位（同网格布局），加载完成后再判断列表/空态
 - **歌词进入居中**：Player.vue `autoScroll(smooth = true)`，onMounted 时 `autoScroll(false)` 瞬时居中当前行；watch 回调需显式 `() => autoScroll()`，避免 watch 新值误传给 smooth 参数
 - **播放状态持久化**：`src/lib/playerPersist.ts`（store 文件 `flozen-player.json`，键 `snapshot`/`history`）；player.ts 启动时 `restorePlayerState()` 恢复队列/索引/音量/音质/循环/随机/进度（不自动播放，`resumeTime` + `pendingSeek` 在 loadedmetadata 时 seek，恢复后首次 play() 检测 `!audio.src` 走续播分支）；保存时机：watch 队列等字段 debounce 800ms + rAF 每 10s 存进度 + pause 时立存；播放历史 `playHistory`（去重置顶、上限 100 条），loadAndPlay 成功即 `recordHistory`；Home.vue 最近播放已接入（前 8 条，点击播放并跳转 /player）
 

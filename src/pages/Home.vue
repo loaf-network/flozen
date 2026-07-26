@@ -2,7 +2,8 @@
 import { useRouter } from "vue-router"
 import { Search, Settings, Music, Trash2 } from "@lucide/vue"
 import { toast } from "vue-sonner"
-import { playHistory, play, clearHistory } from "@/lib/player"
+import { playHistory, historyLoaded, play, clearHistory } from "@/lib/player"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const router = useRouter()
 
@@ -62,7 +63,19 @@ function onClearHistory() {
                 清除
             </button>
         </div>
-        <div v-if="playHistory.length" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+        <div v-if="!historyLoaded" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+            <div v-for="i in 8" :key="i" class="flex items-center gap-3 p-2.5 min-w-0">
+                <Skeleton class="size-11 rounded-lg shrink-0" />
+                <div class="flex-1 min-w-0 space-y-2">
+                    <Skeleton class="h-3.5 w-4/5 rounded" />
+                    <Skeleton class="h-3 w-3/5 rounded" />
+                </div>
+            </div>
+        </div>
+        <div
+            v-else-if="playHistory.length"
+            class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2"
+        >
             <button
                 v-for="(entry, i) in playHistory.slice(0, 12)"
                 :key="entry.song.id"
