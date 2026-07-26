@@ -4,7 +4,7 @@
 
 ## 项目概述
 
-Flozen 是基于 Tauri v2 + Vue 3 的跨平台音乐播放器，适配 Windows、MacOS、Android 与 iOS 等市场主流操作系统，不包括由 HUAWEI 开发的 HarmonyOS NEXT 系统。
+Flozen 是基于 Tauri v2 + Vue 3 的跨平台音乐播放器，适配 Windows、MacOS 等市场主流操作系统（不支持移动端）。
 
 ### 开发特点
 

@@ -1,6 +1,6 @@
 # Flozen
 
-基于 **Tauri v2 + Vue 3** 的跨平台音乐播放器，适配 Windows、macOS、Android 与 iOS。支持多音乐平台模块化接入（目前仅支持网易云音乐）。
+基于 **Tauri v2 + Vue 3** 的轻量、简洁的音乐播放器，适配 Windows、macOS 等平台（暂不支持移动端）。支持多音乐平台模块化接入（目前仅支持网易云音乐）。
 
 ## 🖥 使用截图
 
@@ -64,7 +64,7 @@ Flozen 设计的目标是提供更加简洁的音乐客户端，开发者严格�
 
 为保证质量，我们编写了 [**AGENTS.md**](AGENTS.md) 为 AI Agent 提供指引。
 
-本程序在初步开发过程中，使用了 [Xiaomi MiMo-V2.5](https://mimo.xiaomi.com/zh/) 与 [DeepSeek V4 Pro](https://platform.deepseek.com/) 模型。
+本程序在初步开发过程中，大量使用了 [Xiaomi MiMo-V2.5](https://mimo.xiaomi.com/zh/) 与 [DeepSeek V4 Pro](https://platform.deepseek.com/) 模型。
 
 ## 📃 许可证
 
