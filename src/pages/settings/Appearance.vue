@@ -1,13 +1,46 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue"
+import { ref, computed, onMounted } from "vue"
 import { useRouter } from "vue-router"
-import { ArrowLeft, Check, Moon, Sun, Monitor } from "@lucide/vue"
+import { ArrowLeft, Check, Moon, Sun, Monitor, Gpu, Waves } from "@lucide/vue"
 import { Button } from "@/components/ui/button"
-import { saveConfig } from "@/lib/store"
+import { Switch } from "@/components/ui/switch"
+import { toast } from "vue-sonner"
+import { saveConfig, loadConfig } from "@/lib/store"
+import { listGpus, getGpuPreference, setGpuPreference, type GpuInfo } from "@/lib/gpu"
 
 const router = useRouter()
 const STORAGE_KEY = "flozen-theme"
 const mode = ref<"dark" | "light" | "auto">("dark")
+
+const fluidBg = ref(true)
+
+function onToggleFluid(checked: boolean) {
+    fluidBg.value = checked
+    saveConfig("fluidBg", checked)
+}
+
+const gpus = ref<GpuInfo[]>([])
+const useDiscrete = ref(false)
+const discreteGpu = computed(() => gpus.value.find((g) => g.discrete))
+
+async function onToggleDiscrete(checked: boolean) {
+    if (checked && !discreteGpu.value) {
+        useDiscrete.value = false
+        toast.warning("未检测到独立显卡，将继续使用核显渲染")
+        return
+    }
+    try {
+        await setGpuPreference(checked ? 2 : 0)
+        useDiscrete.value = checked
+        toast.success(
+            checked
+                ? `已启用独显渲染（${discreteGpu.value!.name}），重启应用后生效`
+                : "已恢复系统默认显卡调度，重启应用后生效",
+        )
+    } catch {
+        toast.error("设置显卡偏好失败")
+    }
+}
 
 function applyTheme(m: "dark" | "light" | "auto") {
     const isDark =
@@ -30,6 +63,16 @@ onMounted(() => {
     const mq = window.matchMedia("(prefers-color-scheme: dark)")
     mq.addEventListener("change", () => {
         if (mode.value === "auto") applyTheme("auto")
+    })
+
+    listGpus().then((list) => {
+        gpus.value = list
+    })
+    getGpuPreference().then((pref) => {
+        useDiscrete.value = pref === 2
+    })
+    loadConfig().then((cfg) => {
+        fluidBg.value = cfg.fluidBg
     })
 })
 
@@ -84,5 +127,47 @@ const themes = [
                 </div>
             </button>
         </div>
+
+        <p class="text-xs font-medium text-muted-foreground mt-6 mb-2 px-1">播放页</p>
+        <div class="flex items-center gap-4 w-full px-4 py-3.5 rounded-xl border border-border">
+            <div
+                class="size-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center shrink-0"
+            >
+                <Waves :size="18" />
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium leading-snug">液体流动背景</p>
+                <p class="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                    随封面取色的动态色团，关闭后播放页使用静态模糊背景，可降低显卡占用
+                </p>
+            </div>
+            <Switch :model-value="fluidBg" @update:model-value="onToggleFluid" />
+        </div>
+
+        <template v-if="gpus.length">
+            <p class="text-xs font-medium text-muted-foreground mt-6 mb-2 px-1">渲染</p>
+            <div class="flex items-center gap-4 w-full px-4 py-3.5 rounded-xl border border-border">
+                <div
+                    class="size-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center shrink-0"
+                >
+                    <Gpu :size="18" />
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium leading-snug">使用独立显卡渲染</p>
+                    <p class="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                        {{
+                            discreteGpu
+                                ? `检测到 ${discreteGpu.name}，开启后重启应用生效`
+                                : "未检测到独立显卡，将使用核显渲染"
+                        }}
+                    </p>
+                </div>
+                <Switch
+                    :model-value="useDiscrete"
+                    :disabled="!discreteGpu"
+                    @update:model-value="onToggleDiscrete"
+                />
+            </div>
+        </template>
     </div>
 </template>

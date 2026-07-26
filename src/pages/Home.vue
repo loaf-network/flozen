@@ -1,8 +1,14 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router"
 import { Search, Settings, Music } from "@lucide/vue"
+import { playHistory, play } from "@/lib/player"
 
 const router = useRouter()
+
+function playFromHistory(index: number) {
+    play(playHistory[index].song)
+    router.push("/player")
+}
 </script>
 
 <template>
@@ -39,7 +45,35 @@ const router = useRouter()
 
         <!-- 最近播放 -->
         <p class="text-xs font-medium text-muted-foreground mb-3">最近播放</p>
+        <div v-if="playHistory.length" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+            <button
+                v-for="(entry, i) in playHistory.slice(0, 12)"
+                :key="entry.song.id"
+                class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-accent/40 transition-colors text-left min-w-0"
+                @click="playFromHistory(i)"
+            >
+                <img
+                    v-if="entry.song.al?.picUrl"
+                    :src="`${entry.song.al.picUrl}?param=80y80`"
+                    referrerpolicy="no-referrer"
+                    class="size-11 rounded-lg object-cover shrink-0"
+                />
+                <div
+                    v-else
+                    class="size-11 rounded-lg bg-muted flex items-center justify-center shrink-0"
+                >
+                    <Music :size="16" class="text-muted-foreground" />
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">{{ entry.song.name }}</p>
+                    <p class="text-xs text-muted-foreground truncate">
+                        {{ entry.song.ar?.map((a) => a.name).join(" / ") }}
+                    </p>
+                </div>
+            </button>
+        </div>
         <div
+            v-else
             class="flex items-center justify-center py-10 rounded-2xl border border-solid border-border/40 text-muted-foreground"
         >
             <div class="flex flex-col items-center gap-2">

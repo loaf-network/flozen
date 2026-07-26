@@ -91,7 +91,7 @@ router.beforeEach((to) => {
         return
     }
     if (fromPath === "/player") {
-        to.meta.transition = "fade"
+        to.meta.transition = "player-back"
         return
     }
 

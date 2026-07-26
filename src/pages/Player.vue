@@ -1,7 +1,13 @@
 <script setup lang="ts">
-import { computed, ref, nextTick, watch } from "vue"
+import { computed, ref, nextTick, watch, onMounted } from "vue"
 import { player, seek } from "@/lib/player"
+import { loadConfig } from "@/lib/store"
 import PlayerControls from "@/components/player/PlayerControls.vue"
+
+const fluidBg = ref(true)
+onMounted(async () => {
+    fluidBg.value = (await loadConfig()).fluidBg
+})
 
 const lyricsEl = ref<HTMLDivElement>()
 const userScrolling = ref(false)
@@ -114,7 +120,7 @@ const album = computed(() => player.currentSong?.al?.name ?? "")
                     : undefined,
             }"
         />
-        <div class="fluid" :class="{ 'fluid--paused': !player.playing }">
+        <div v-if="fluidBg" class="fluid" :class="{ 'fluid--paused': !player.playing }">
             <div
                 v-for="(c, i) in blobColors"
                 :key="i"

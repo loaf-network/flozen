@@ -8,6 +8,7 @@ const DEFAULTS = {
     ncmProfile: null as UserProfile | null,
     clarity: false,
     realIP: "",
+    fluidBg: true,
 }
 
 type Config = typeof DEFAULTS

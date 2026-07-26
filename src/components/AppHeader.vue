@@ -61,7 +61,12 @@ async function closeWin() {
         </div>
 
         <div class="header-center">
-            <div class="header-text" @mouseenter="hovering = true" @mouseleave="hovering = false">
+            <div
+                v-if="!onPlayer"
+                class="header-text"
+                @mouseenter="hovering = true"
+                @mouseleave="hovering = false"
+            >
                 <Transition name="hdr-text" mode="out-in">
                     <p
                         v-if="player.currentSong && !hovering"
@@ -129,6 +134,24 @@ async function closeWin() {
 .app-header:not(.is-player) {
     background: oklch(0.55 0.18 22 / 0.12);
     border-bottom-color: oklch(0.55 0.18 22 / 0.15);
+}
+.app-header.is-player {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: transparent;
+    border-bottom: none;
+    /* 等抽屉滑上完成后再淡入，避免按钮在旧页面上闪现 */
+    animation: hdr-appear 0.3s ease 0.45s both;
+}
+@keyframes hdr-appear {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 .dark .app-header:not(.is-player) {
     background: oklch(0.62 0.17 22 / 0.08);
@@ -274,36 +297,6 @@ async function closeWin() {
 .is-player .win-btn--close:hover {
     background: rgba(220, 60, 50, 0.55);
     color: #fff;
-}
-
-:root .is-player .win-btn {
-    color: rgba(0, 0, 0, 0.3);
-}
-:root .is-player .win-btn:hover {
-    background: rgba(0, 0, 0, 0.05);
-    color: rgba(0, 0, 0, 0.6);
-}
-:root .is-player .header-back {
-    color: rgba(0, 0, 0, 0.45);
-}
-:root .is-player .header-back:hover {
-    background: rgba(0, 0, 0, 0.05);
-    color: rgba(0, 0, 0, 0.7);
-}
-
-.dark .is-player .win-btn {
-    color: rgba(255, 255, 255, 0.35);
-}
-.dark .is-player .win-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.7);
-}
-.dark .is-player .header-back {
-    color: rgba(255, 255, 255, 0.6);
-}
-.dark .is-player .header-back:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.9);
 }
 
 .hdr-text-enter-active,

@@ -8,6 +8,10 @@ import "vue-sonner/style.css"
 
 const route = useRoute()
 const onPlayer = computed(() => route.name === "player")
+const transitionName = computed(() => (route.meta.transition as string) || "fade")
+const transitionMode = computed(() =>
+    transitionName.value.startsWith("player") ? undefined : "out-in",
+)
 
 const STORAGE_KEY = "flozen-theme"
 
@@ -36,7 +40,7 @@ onMounted(() => {
         <AppHeader />
         <div class="app-content" :class="{ 'is-player': onPlayer }">
             <router-view v-slot="{ Component }">
-                <Transition name="fade" mode="out-in">
+                <Transition :name="transitionName" :mode="transitionMode">
                     <component :is="Component" />
                 </Transition>
             </router-view>
@@ -48,6 +52,7 @@ onMounted(() => {
 
 <style>
 .app-root {
+    position: relative;
     display: flex;
     flex-direction: column;
     width: 100vw;
@@ -56,6 +61,7 @@ onMounted(() => {
 }
 
 .app-content {
+    position: relative;
     flex: 1;
     display: flex;
     flex-direction: column;

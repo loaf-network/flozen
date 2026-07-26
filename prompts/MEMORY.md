@@ -83,6 +83,16 @@
 - **SMTC/系统媒体控件适配**：桌面 `navigator.mediaSession`（WebView2 原生映射 SMTC）+ 移动 tauri-plugin-media-session；`src/lib/smtc.ts` 前端适配层（getPlatform 缓存 + initMedia 单次注册媒体键 action handler + updateMedia/clearMedia 分平台分发）；player.ts 集成（切歌推元数据+封面 `?param=300y300`、play/pause 推状态、rAF 节流 2s 推进度、clearQueue 清空）；媒体键 play/pause/previoustrack/nexttrack/stop/seekto 反控播放器；`smtc_mobile.rs` 移动端 command 包装；lib.rs 加 `get_platform` command。曾用 tauri-plugin-media 0.1.1 实测失败后移除
 - **窗口标题动态更新**：播放时 `{歌名} - {艺术家} · Flozen`，无歌曲回退 `Flozen`（player.ts 的 setWindowTitle，getCurrentWindow().setTitle）
 - **修复 ZenIsland Tauri v1 API 残留**：`appWindow` → `getCurrentWindow()`，窗口控制按钮恢复可用
+- **AppHeader 播放页融合**：播放页时头部 `position: absolute` 悬浮在播放页背景之上（透明背景无边框，`.app-root` 加 `position: relative`），消除顶部黑/白条；同时播放页隐藏头部中间歌词/歌名区域（`v-if="!onPlayer"`）
+- **播放页底部抽屉过渡**：App.vue 顶层 `<Transition>` 改为动态 `:name="route.meta.transition"`，player/player-back 过渡不用 `out-in`（新旧页面同时渲染，离场页绝对定位重叠），其余保持 `out-in` fade。进入：播放页 `translateY(100%)` 滑上（z-index 200 盖过头部），主界面 `scale(0.94)+brightness(0.55)+圆角`；返回对称滑下。**注意 44px 头部补偿**：进入时头部脱离文档流，离场主界面 `top: 44px`；返回时头部回流，离场播放页 `top: -44px`。缓动 `cubic-bezier(0.32, 0.72, 0, 1)`（iOS sheet 风格）
+- **重要（过渡类被 scoped 样式覆盖的坑）**：全局过渡类（style.css 无 layer）与组件 scoped 样式同为 unlayered，按特异性比较——Player.vue `.root[data-v-x]` (0,2,0) 高于 `.player-back-leave-active` (0,1,0)，导致离场时 `position: absolute` 被 scoped 的 `position: relative; height: 100%` 覆盖、页面滑动错乱。修复：定位属性加 `!important` 并显式 `height: calc(100% + 44px)`。Tailwind 工具类在 @layer utilities 内，天然输给 unlayered 全局类，无此问题
+- **头部按钮闪现修复**：`.app-header.is-player` 加 `animation: hdr-appear 0.3s ease 0.45s both`（透明→不透明），等抽屉滑上完成后头部才淡入，避免返回键/窗口按钮在旧页面上闪现
+- **独显渲染偏好（仅 Windows）**：lib.rs 新增 `list_gpus`（PowerShell Get-CimInstance Win32_VideoController）、`get_gpu_preference` / `set_gpu_preference`（reg.exe 读写 `HKCU\Software\Microsoft\DirectX\UserGpuPreferences`，值 `<exe路径>=GpuPreference=2;`，重启生效）；前端 `src/lib/gpu.ts`（正则区分独显/核显）；Appearance.vue「渲染」区块 Switch，无独显时禁用
+- **重要（WebView2 独显）**：注册表 GpuPreference 只影响主进程，WebView2 渲染在独立子进程（msedgewebview2.exe）不受影响！必须在 WebView 创建前设置环境变量 `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--force_high_performance_gpu`（WebView2 运行时 145+ 支持，见 lib.rs `apply_gpu_preference_env`，run() 开头按注册表偏好注入）
+- **播放页按钮恒白**：`.is-player` 的返回键/窗口按钮删除了浅色模式黑色覆盖规则，无论浅/深色主题均为白色（播放页背景恒为深色）
+- **播放页液体背景开关**：store.ts 配置新增 `fluidBg`（默认 true）；Appearance.vue「播放页」区块 Switch；Player.vue onMounted 读配置，关闭时 `v-if` 不渲染 .fluid 色团（保留静态模糊封面背景）
+- **首页最近播放自适应**：`grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`，最多显示 12 条
+- **播放状态持久化**：`src/lib/playerPersist.ts`（store 文件 `flozen-player.json`，键 `snapshot`/`history`）；player.ts 启动时 `restorePlayerState()` 恢复队列/索引/音量/音质/循环/随机/进度（不自动播放，`resumeTime` + `pendingSeek` 在 loadedmetadata 时 seek，恢复后首次 play() 检测 `!audio.src` 走续播分支）；保存时机：watch 队列等字段 debounce 800ms + rAF 每 10s 存进度 + pause 时立存；播放历史 `playHistory`（去重置顶、上限 100 条），loadAndPlay 成功即 `recordHistory`；Home.vue 最近播放已接入（前 8 条，点击播放并跳转 /player）
 
 ### 项目结构 (模块化)
 

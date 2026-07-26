@@ -1,8 +1,16 @@
-import { reactive } from "vue"
+import { reactive, watch } from "vue"
 import { ncmSongUrl, ncmLyric, type SearchSong } from "./api"
 import { parseLrc, getCurrentLine, type LyricLine } from "./lyrics"
 import { loadConfig } from "./store"
 import { initMedia, updateMedia, clearMedia } from "./smtc"
+import {
+    loadPlayerSnapshot,
+    savePlayerSnapshot,
+    loadHistory,
+    saveHistory,
+    type PlayerSnapshot,
+    type HistoryEntry,
+} from "./playerPersist"
 
 const audio = new Audio()
 audio.volume = 0.7
@@ -69,6 +77,70 @@ export const player = reactive<PlayerState>({
     loading: false,
 })
 
+// ── 持久化：播放历史 + 队列快照 ──
+export const playHistory = reactive<HistoryEntry[]>([])
+
+let resumeTime = 0
+let pendingSeek = 0
+let saveTimer: ReturnType<typeof setTimeout> | null = null
+let lastTimeSave = 0
+
+function snapshot(): PlayerSnapshot {
+    return {
+        queue: [...player.queue],
+        queueIndex: player.queueIndex,
+        currentTime: player.currentTime,
+        volume: player.volume,
+        quality: player.quality,
+        repeatMode: player.repeatMode,
+        shuffle: player.shuffle,
+    }
+}
+
+function schedulePersist() {
+    if (saveTimer) clearTimeout(saveTimer)
+    saveTimer = setTimeout(() => savePlayerSnapshot(snapshot()), 800)
+}
+
+function recordHistory(song: SearchSong) {
+    const idx = playHistory.findIndex((e) => e.song.id === song.id)
+    if (idx !== -1) playHistory.splice(idx, 1)
+    playHistory.unshift({ song, playedAt: Date.now() })
+    if (playHistory.length > 100) playHistory.length = 100
+    saveHistory([...playHistory])
+}
+
+async function restorePlayerState() {
+    const [snap, hist] = await Promise.all([loadPlayerSnapshot(), loadHistory()])
+    playHistory.push(...hist)
+    if (snap && snap.queue.length > 0) {
+        player.queue = snap.queue
+        player.queueIndex = Math.min(Math.max(snap.queueIndex, 0), snap.queue.length - 1)
+        player.currentSong = player.queue[player.queueIndex] ?? null
+        player.volume = snap.volume
+        audio.volume = snap.volume
+        player.quality = snap.quality
+        player.repeatMode = snap.repeatMode
+        player.shuffle = snap.shuffle
+        player.currentTime = snap.currentTime
+        resumeTime = snap.currentTime
+        setWindowTitle(player.currentSong)
+    }
+    watch(
+        () => [
+            player.queue,
+            player.queueIndex,
+            player.volume,
+            player.quality,
+            player.repeatMode,
+            player.shuffle,
+        ],
+        schedulePersist,
+        { deep: true },
+    )
+}
+restorePlayerState()
+
 let animFrame = 0
 let lastMediaSync = 0
 
@@ -83,8 +155,20 @@ function updateTime() {
         lastMediaSync = now
         updateMedia({ position: player.currentTime })
     }
+    if (now - lastTimeSave > 10000) {
+        lastTimeSave = now
+        savePlayerSnapshot(snapshot())
+    }
     animFrame = requestAnimationFrame(updateTime)
 }
+
+audio.addEventListener("loadedmetadata", () => {
+    if (pendingSeek > 0) {
+        audio.currentTime = pendingSeek
+        player.currentTime = pendingSeek
+        pendingSeek = 0
+    }
+})
 
 audio.addEventListener("play", () => {
     player.playing = true
@@ -95,6 +179,7 @@ audio.addEventListener("pause", () => {
     player.playing = false
     cancelAnimationFrame(animFrame)
     updateMedia({ isPlaying: false })
+    savePlayerSnapshot(snapshot())
 })
 audio.addEventListener("ended", () => {
     player.playing = false
@@ -105,8 +190,9 @@ audio.addEventListener("error", () => {
     player.loading = false
 })
 
-async function loadAndPlay(song: SearchSong) {
+async function loadAndPlay(song: SearchSong, seekTo = 0) {
     player.loading = true
+    pendingSeek = seekTo
     try {
         const config = await loadConfig()
         const urlRes = await ncmSongUrl(song.id, player.quality, config.ncmCookie)
@@ -119,6 +205,7 @@ async function loadAndPlay(song: SearchSong) {
         audio.play().catch(() => {})
         syncMediaMetadata(song)
         setWindowTitle(song)
+        recordHistory(song)
 
         const lyricRes = await ncmLyric(song.id)
         const lrc = lyricRes.lrc?.lyric ?? ""
@@ -145,7 +232,13 @@ export function play(song?: SearchSong) {
         }
         loadAndPlay(song)
     } else if (player.currentSong) {
-        audio.play().catch(() => {})
+        if (!audio.src) {
+            // 重启恢复后的首次播放：从上次进度继续
+            loadAndPlay(player.currentSong, resumeTime)
+            resumeTime = 0
+        } else {
+            audio.play().catch(() => {})
+        }
     }
 }
 
