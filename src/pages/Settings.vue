@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router"
-import { ArrowRight, User, Headphones, Palette, Shield, Info } from "@lucide/vue"
+import { ArrowRight, User, Headphones, Palette, Shield, Info, Wrench } from "@lucide/vue"
 
 const router = useRouter()
 
@@ -29,6 +29,12 @@ const items = [
         desc: "信息收集、数据共享相关设置",
         path: "/app/settings/privacy",
     },
+    {
+        icon: Wrench,
+        label: "工具箱",
+        desc: "窗口大小调整等实用工具",
+        path: "/app/settings/toolbox",
+    },
     { icon: Info, label: "关于", desc: "版本信息与开源许可", path: "/app/settings/about" },
 ]
 </script>
@@ -54,7 +60,9 @@ const items = [
                                 ? 'bg-purple-500/10 text-purple-500'
                                 : idx === 3
                                   ? 'bg-green-500/10 text-green-500'
-                                  : 'bg-muted text-muted-foreground',
+                                  : idx === 4
+                                    ? 'bg-orange-500/10 text-orange-500'
+                                    : 'bg-muted text-muted-foreground',
                     ]"
                 >
                     <component :is="item.icon" :size="20" class="text-muted-foreground" />

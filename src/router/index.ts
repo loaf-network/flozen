@@ -53,6 +53,11 @@ const router = createRouter({
                     component: () => import("@/pages/settings/Privacy.vue"),
                 },
                 {
+                    path: "settings/toolbox",
+                    name: "settings-toolbox",
+                    component: () => import("@/pages/settings/Toolbox.vue"),
+                },
+                {
                     path: "settings/about",
                     name: "settings-about",
                     component: () => import("@/pages/settings/About.vue"),
