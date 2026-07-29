@@ -2,7 +2,6 @@
 import { ref, onMounted } from "vue"
 import { TrendingUp, Flame, Zap, Play, RefreshCw } from "@lucide/vue"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ncmPlaylistDetail, type SearchSong } from "@/lib/api"

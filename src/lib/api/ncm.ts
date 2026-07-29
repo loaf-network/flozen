@@ -65,7 +65,7 @@ export interface SearchHotRes {
 
 export interface SongUrlRes {
     code: number
-    data: { url: string | null; br: number }[]
+    data: { url: string | null; br: number; fee?: number }[]
 }
 
 export interface LyricRes {
