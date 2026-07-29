@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.2](https://github.com/loaf-network/flozen/compare/v1.0.1...v1.0.2) (2026-07-29)
+
+### Bug Fixes
+
+* **ui:** 优化播放列表侧边栏逻辑并更新 API 类型定义 ([0aad450](https://github.com/loaf-network/flozen/commit/0aad450bd373207b183be579c3e570b1f113f5e1))
+
 ## [1.0.1](https://github.com/loaf-network/flozen/compare/v1.0.0...v1.0.1) (2026-07-29)
 
 ## 1.0.0 (2026-07-29)
