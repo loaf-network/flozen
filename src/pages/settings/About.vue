@@ -15,9 +15,10 @@ import {
 } from "@lucide/vue"
 import { Button } from "@/components/ui/button"
 import { toast } from "vue-sonner"
+import pkg from "../../../package.json"
 
 const router = useRouter()
-const version = "1.0.0"
+const version = pkg.version
 const checking = ref(false)
 const latestVersion = ref("")
 const hasUpdate = ref(false)

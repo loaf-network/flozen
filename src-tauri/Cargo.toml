@@ -1,6 +1,6 @@
 [package]
 name = "flozen"
-version = "1.0.0"
+version = "1.0.0"  # 应用版本在 package.json 中统一维护
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
