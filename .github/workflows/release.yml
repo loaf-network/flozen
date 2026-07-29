@@ -55,7 +55,7 @@ jobs:
         with:
           name: v${{ steps.version.outputs.version }}
           body: |
-            ## 版本 v${{ steps.version.outputs.version }}
+            ## CHANGELOG / 更改日志
             
             ${{ steps.changelog.outputs.changelog }}
           draft: false
