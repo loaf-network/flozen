@@ -8,9 +8,11 @@ on:
 permissions:
   contents: write
 
+
 jobs:
   create-release:
     runs-on: ubuntu-latest
+
     outputs:
       release_id: ${{ steps.create_release.outputs.id }}
 
@@ -20,14 +22,17 @@ jobs:
         with:
           fetch-depth: 0
 
+
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '22'
+          cache: npm
+
 
       - name: Install dependencies
         run: npm ci
+
 
       - name: Extract version from tag
         id: version
@@ -37,7 +42,6 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
 
-      # 读取 release-it 已经生成好的 CHANGELOG.md
       - name: Extract changelog
         id: changelog
         shell: bash
@@ -45,25 +49,25 @@ jobs:
           VERSION=${{ steps.version.outputs.version }}
 
           if [ ! -f CHANGELOG.md ]; then
-            echo "CHANGELOG.md not found"
             CHANGELOG="No changelog found."
           else
             CHANGELOG=$(awk "
-              /^## ${VERSION} / {
+              /^## \\[$VERSION\\]/ {
                 found=1
                 next
               }
-              /^## / {
+              /^## \\[/ {
                 if(found) exit
               }
               found {
                 print
               }
             " CHANGELOG.md)
+          fi
 
-            if [ -z "$CHANGELOG" ]; then
-              CHANGELOG="No changelog found for version ${VERSION}."
-            fi
+
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="No changelog found for v$VERSION."
           fi
 
 
@@ -72,24 +76,31 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
 
+
       - name: Create GitHub Release
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
           name: v${{ steps.version.outputs.version }}
+
           body: |
             ## Changelog
 
             ${{ steps.changelog.outputs.changelog }}
+
           draft: false
           prerelease: false
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
+
   build-windows:
     needs: create-release
+
     runs-on: windows-latest
+
 
     steps:
       - name: Checkout
@@ -97,17 +108,20 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
+
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
+
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
 
+
       - name: Cache Rust dependencies
         uses: actions/cache@v4
         with:
@@ -115,103 +129,156 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             src-tauri/target
+
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
           restore-keys: |
             ${{ runner.os }}-cargo-
+
+
 
       - name: Install frontend dependencies
         run: npm ci
 
+
+
       - name: Build Tauri app
         run: npx tauri build
+
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
+
+
       - name: Upload Windows artifacts
         uses: softprops/action-gh-release@v2
+
         with:
           tag_name: ${{ github.ref_name }}
+
           files: |
             src-tauri/target/release/bundle/msi/*.msi
             src-tauri/target/release/bundle/nsis/*.exe
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
 
 
   build-macos:
     needs: create-release
+
     runs-on: macos-latest
+
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
         with:
           ref: ${{ github.ref }}
 
+
+
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
+
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
+
+
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
+
         with:
           targets: x86_64-apple-darwin,aarch64-apple-darwin
 
+
+
       - name: Cache Rust dependencies
         uses: actions/cache@v4
+
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
             src-tauri/target
+
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
           restore-keys: |
             ${{ runner.os }}-cargo-
+
+
 
       - name: Install frontend dependencies
         run: npm ci
 
+
+
       - name: Build Intel
         run: npx tauri build --target x86_64-apple-darwin
+
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+
+
 
       - name: Build Apple Silicon
         run: npx tauri build --target aarch64-apple-darwin
+
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
+
+
+
       - name: Upload macOS artifacts
         uses: softprops/action-gh-release@v2
+
         with:
           tag_name: ${{ github.ref_name }}
+
           files: |
             src-tauri/target/release/bundle/dmg/*.dmg
             src-tauri/target/release/bundle/macos/*.app
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
+
+
+
   build-linux:
     needs: create-release
+
     runs-on: ubuntu-22.04
+
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
         with:
           ref: ${{ github.ref }}
 
+
+
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
+
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
+
+
 
       - name: Install system dependencies
         run: |
@@ -224,35 +291,53 @@ jobs:
             patchelf \
             libssl-dev
 
+
+
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
+
+
       - name: Cache Rust dependencies
         uses: actions/cache@v4
+
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
             src-tauri/target
+
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
           restore-keys: |
             ${{ runner.os }}-cargo-
+
+
 
       - name: Install frontend dependencies
         run: npm ci
 
+
+
       - name: Build Linux
         run: npx tauri build
+
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
+
+
+
       - name: Upload Linux artifacts
         uses: softprops/action-gh-release@v2
+
         with:
           tag_name: ${{ github.ref_name }}
+
           files: |
             src-tauri/target/release/bundle/deb/*.deb
             src-tauri/target/release/bundle/appimage/*.AppImage
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
