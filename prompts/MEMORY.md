@@ -108,6 +108,7 @@
 - **VIP/版权提示**（player.ts）：歌曲 URL 为空时按 fee 字段区分提示——fee=1（VIP专享）、fee=4（需购买专辑）、其余（无版权），通过 sonner toast 提示
 - **未登录功能禁用**（Discover.vue）：`isLoggedIn` 状态控制，播放前检查，未登录 toast 提示并引导跳转设置页
 - **路由/侧边栏更新**：`/app/discover` 路由 + 侧边栏 Compass 图标「发现」入口（Home 和 Search 之间）；Search.vue 新增 `?q=` query 参数支持，进入时自动搜索
+- **关于页**（About.vue）：分区布局——应用信息卡片（品牌色底 + Logo + 版本号） + "应用"区块（检查更新按钮，GitHub API 对比版本号，三种状态图标） + "链接"区块（官方网站/Loaf Network/GitHub/问题反馈）；清理了 style.css 中未使用的 about-gradient/about-border 变量
 
 ### 项目结构 (模块化)
 

@@ -93,7 +93,6 @@ async function startApp() {
             <!-- 滚动提示 -->
             <div class="scroll-hint" @click="scrollTo('theme')">
                 <ChevronDown :size="16" class="animate-bounce" />
-                <span class="text-[11px] text-muted-foreground/60">向下滚动</span>
             </div>
         </section>
 
@@ -125,7 +124,6 @@ async function startApp() {
 
             <div class="scroll-hint" @click="scrollTo('privacy')">
                 <ChevronDown :size="16" class="animate-bounce" />
-                <span class="text-[11px] text-muted-foreground/60">向下滚动</span>
             </div>
         </section>
 

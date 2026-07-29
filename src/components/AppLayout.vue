@@ -1,13 +1,23 @@
 <script setup lang="ts">
-import { computed } from "vue"
+import { computed, ref, onMounted } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import { Music, Home, Settings, Search, ListMusic, Compass } from "@lucide/vue"
+import { Music, Home, Settings, Search, ListMusic, Compass, Lock } from "@lucide/vue"
+import { Button } from "@/components/ui/button"
+import { loadConfig } from "@/lib/store"
 import PlaylistSidebar from "@/components/PlaylistSidebar.vue"
 
 const route = useRoute()
 const router = useRouter()
 
 const showPlaylistSidebar = computed(() => route.path.startsWith("/app/playlists"))
+
+const isLoggedIn = ref(false)
+const isNcmPage = computed(() => route.path === "/app/settings/ncm")
+
+onMounted(async () => {
+    const config = await loadConfig()
+    isLoggedIn.value = !!config.ncmCookie
+})
 
 const nav = [
     { path: "/app", icon: Home, tip: "首页" },
@@ -63,6 +73,21 @@ function isActive(path: string) {
 
             <!-- 主内容 -->
             <main class="flex-1 overflow-auto no-scrollbar min-w-0">
+                <div
+                    v-if="!isLoggedIn && !isNcmPage"
+                    class="mx-6 mt-6 flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-primary/5 border border-primary/15"
+                >
+                    <Lock :size="18" class="text-primary shrink-0" />
+                    <span class="text-sm font-medium flex-1">登录网易云账号，解锁完整播放功能</span>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        class="h-7 text-xs"
+                        @click="router.push('/app/settings/ncm')"
+                    >
+                        去登录
+                    </Button>
+                </div>
                 <router-view v-slot="{ Component, route: r }">
                     <Transition :name="(r.meta.transition as string) || 'fade'" mode="out-in">
                         <component :is="Component" :key="r.fullPath" />

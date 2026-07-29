@@ -12,6 +12,7 @@ import {
 import { loadConfig } from "@/lib/store"
 import { setQueue, play } from "@/lib/player"
 import { getCachedDetail, setCachedDetail } from "@/lib/playlistCache"
+import { toast } from "vue-sonner"
 import SongGrid from "@/components/SongGrid.vue"
 
 const route = useRoute()
@@ -19,6 +20,7 @@ const router = useRouter()
 const songs = ref<SearchSong[]>([])
 const playlist = ref<PlaylistSimple | null>(null)
 const loading = ref(true)
+const isLoggedIn = ref(false)
 const viewMode = ref<"gallery" | "list">("gallery")
 const galleryKey = ref(0)
 
@@ -50,7 +52,9 @@ async function loadPlaylist(id: number, force = false) {
     galleryKey.value++
 }
 
-onMounted(() => {
+onMounted(async () => {
+    const config = await loadConfig()
+    isLoggedIn.value = !!config.ncmCookie
     const id = Number(route.params.id)
     if (id) loadPlaylist(id)
     else loading.value = false
@@ -64,16 +68,27 @@ watch(
 )
 
 function playAll() {
+    if (!checkLogin()) return
     setQueue(songs.value)
     router.push("/player")
 }
 function shuffleAll() {
+    if (!checkLogin()) return
     setQueue(songs.value.sort(() => Math.random() - 0.5))
     router.push("/player")
 }
 function onPlay(song: SearchSong) {
+    if (!checkLogin()) return
     play(song)
     router.push("/player")
+}
+function checkLogin() {
+    if (!isLoggedIn.value) toast.error("请先登录网易云账号")
+    return isLoggedIn.value
+}
+function doRefresh() {
+    if (!checkLogin()) return
+    loadPlaylist(Number(route.params.id), true)
 }
 function formatDuration(ms: number) {
     const m = Math.floor(ms / 60000)
@@ -130,12 +145,7 @@ function formatDuration(ms: number) {
                         >
                             <List :size="14" /> {{ viewMode === "gallery" ? "列表" : "画廊" }}
                         </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            :disabled="loading"
-                            @click="loadPlaylist(Number(route.params.id), true)"
-                        >
+                        <Button variant="ghost" size="icon" :disabled="loading" @click="doRefresh">
                             <RefreshCw :size="16" :class="loading && 'animate-spin'" />
                         </Button>
                     </div>

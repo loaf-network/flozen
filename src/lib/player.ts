@@ -1,11 +1,5 @@
 import { reactive, ref, watch } from "vue"
-import {
-    ncmSongUrl,
-    ncmLyric,
-    ncmScrobble,
-    ncmSubmitPlayState,
-    type SearchSong,
-} from "./api"
+import { ncmSongUrl, ncmLyric, ncmScrobble, ncmSubmitPlayState, type SearchSong } from "./api"
 import { parseLrc, getCurrentLine, type LyricLine } from "./lyrics"
 import { loadConfig } from "./store"
 import { initMedia, updateMedia, clearMedia } from "./smtc"
@@ -356,7 +350,6 @@ async function loadAndPlay(song: SearchSong, seekTo = 0) {
         const urlRes = await ncmSongUrl(song.id, player.quality, config.ncmCookie)
         const url = urlRes.data?.[0]?.url
         if (!url) {
-            console.warn("No URL for song:", song.name)
             // 检查是否为VIP歌曲或版权受限
             if (urlRes.data?.[0]?.fee === 1) {
                 const { toast } = await import("vue-sonner")
@@ -382,8 +375,8 @@ async function loadAndPlay(song: SearchSong, seekTo = 0) {
         player.currentLyricIndex = getCurrentLine(player.lyrics, 0)
         // 开始打卡计时（播放30秒后打卡）
         startScrobbleTimer(song)
-    } catch (err) {
-        console.error("Load failed:", err)
+    } catch {
+        /* 静默处理 */
     } finally {
         player.loading = false
     }
@@ -398,7 +391,37 @@ function startScrobbleTimer(song: SearchSong) {
     }, 30000)
 }
 
-export function play(song?: SearchSong) {
+let loginRedirectTimer: ReturnType<typeof setTimeout> | null = null
+
+async function checkLoginBeforePlay(): Promise<boolean> {
+    try {
+        const config = await loadConfig()
+        if (!config.ncmCookie) {
+            const { toast } = await import("vue-sonner")
+            toast.error("请先登录网易云账号")
+            // 延迟跳转登录页，让用户看到提示
+            if (loginRedirectTimer) clearTimeout(loginRedirectTimer)
+            loginRedirectTimer = setTimeout(async () => {
+                try {
+                    const { useRouter } = await import("vue-router")
+                    const router = useRouter()
+                    router.push("/app/settings/ncm")
+                } catch {
+                    // 非路由环境忽略
+                }
+            }, 1500)
+            return false
+        }
+        return true
+    } catch {
+        return false
+    }
+}
+
+export async function play(song?: SearchSong) {
+    // 未登录时禁止所有播放操作
+    if (!(await checkLoginBeforePlay())) return
+
     if (song) {
         player.currentSong = song
         const inQueue = player.queue.findIndex((s) => s.id === song.id)

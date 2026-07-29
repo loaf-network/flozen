@@ -16,6 +16,7 @@ import {
 import { ncmUserPlaylist, ncmCreatePlaylist, type PlaylistSimple } from "@/lib/api"
 import { loadConfig } from "@/lib/store"
 import { getCachedList, setCachedList } from "@/lib/playlistCache"
+import { toast } from "vue-sonner"
 
 const route = useRoute()
 const router = useRouter()
@@ -55,6 +56,14 @@ async function fetchPlaylists(force = false) {
 
 onMounted(() => fetchPlaylists())
 
+async function requireLogin() {
+    if (playlists.value.length > 0) return true
+    const config = await loadConfig()
+    if (config.ncmCookie) return true
+    toast.error("请先登录网易云账号")
+    return false
+}
+
 function select(id: number) {
     router.push(`/app/playlists/${id}`)
 }
@@ -67,6 +76,7 @@ const creating = ref(false)
 
 async function doCreate() {
     if (!newName.value.trim()) return
+    if (!(await requireLogin())) return
     creating.value = true
     const config = await loadConfig()
     try {
@@ -91,10 +101,16 @@ async function doCreate() {
         <div class="sidebar-header">
             <span class="sidebar-title">我的歌单</span>
             <div class="flex items-center gap-1">
-                <button class="sidebar-action" @click="fetchPlaylists(true)">
+                <button
+                    class="sidebar-action"
+                    @click="requireLogin().then((ok) => ok && fetchPlaylists(true))"
+                >
                     <RefreshCw :size="14" :class="loading && 'animate-spin'" />
                 </button>
-                <button class="sidebar-action" @click="showCreate = true">
+                <button
+                    class="sidebar-action"
+                    @click="requireLogin().then((ok) => ok && (showCreate = true))"
+                >
                     <Plus :size="14" />
                 </button>
             </div>
