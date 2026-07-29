@@ -37,6 +37,8 @@
 - NCM 用户信息: `getNcmAccount(cookie)`
 - NCM 退出登录: `ncmLogout()`（调用 `/logout` 接口）
 - NCM 搜索: `ncmSearch(keywords)` / `ncmSearchSuggest(keywords)` / `ncmSearchHot()` / `ncmSongUrl(id)`
+- NCM 排行榜: `ncmToplist()`（所有榜单列表）/ `ncmPlaylistDetail(id)`（榜单详情，排行榜也是歌单）
+- NCM 听歌打卡: `ncmScrobble(id, sourceid, time)`（播放30秒后调用）/ `ncmSubmitPlayState(id, progress)`（每30秒提交播放状态，含 sessionId 会话追踪）
 - NCM API 字段名: 搜索结果使用 `ar`(artists) / `al`(album) / `dt`(duration)，不是 `artists` / `album` / `duration`
 - API 已模块化: `src/lib/api/request.ts`（通用 POST）+ `ncm.ts`（NCM Provider）+ `index.ts`（统一导出）
 - Tauri 项目 JSON/Rust 文件不能有 BOM
@@ -101,6 +103,11 @@
 - **下一首预加载 + 智能随机**（player.ts）：rAF 循环中距结束 <20s 触发 `preloadNext()`——按 `pickNextIndex()` 预选下一首（随机模式优先从 `playedShuffleIds` 未含的歌里随机，全放完则重置一轮；顺序模式按队列顺序），并行请求 URL+歌词缓存到 `preloaded`，另用静音 `preloadAudio` 预热浏览器缓冲；`next()` 直接用预选索引，`loadAndPlay` 命中缓存则秒切（跳过网络请求）。失效时机：切歌/模式切换/队列增删移动/setQueue/clearQueue 调 `invalidatePlan()`，切音质丢弃 `preloaded`；预加载失败记 `preloadFailedId` 防重试风暴
 - **歌词进入居中**：Player.vue `autoScroll(smooth = true)`，onMounted 时 `autoScroll(false)` 瞬时居中当前行；watch 回调需显式 `() => autoScroll()`，避免 watch 新值误传给 smooth 参数
 - **播放状态持久化**：`src/lib/playerPersist.ts`（store 文件 `flozen-player.json`，键 `snapshot`/`history`）；player.ts 启动时 `restorePlayerState()` 恢复队列/索引/音量/音质/循环/随机/进度（不自动播放，`resumeTime` + `pendingSeek` 在 loadedmetadata 时 seek，恢复后首次 play() 检测 `!audio.src` 走续播分支）；保存时机：watch 队列等字段 debounce 800ms + rAF 每 10s 存进度 + pause 时立存；播放历史 `playHistory`（去重置顶、上限 100 条），loadAndPlay 成功即 `recordHistory`；Home.vue 最近播放已接入（前 8 条，点击播放并跳转 /player）
+- **发现页**（Discover.vue）：三列式布局（热歌榜3778678 + 飙升榜19723756 + 新歌榜3779629），每榜展示前20首歌曲；复用 playlistCache.ts 缓存（TTL 10分钟），右上角刷新按钮（force=true 绕过缓存）；骨架屏加载态；未登录时顶部提示卡片（Lock图标 + 跳转登录）；删除了有问题的热搜榜和更多榜单
+- **听歌打卡 & 提交播放状态**（player.ts）：`ncmScrobble`（播放30秒后调 `/scrobble`）+ `ncmSubmitPlayState`（每30秒调 `/relay/play/state/submit`，含 sessionId 会话追踪）；切歌重置 sessionId 和计时器
+- **VIP/版权提示**（player.ts）：歌曲 URL 为空时按 fee 字段区分提示——fee=1（VIP专享）、fee=4（需购买专辑）、其余（无版权），通过 sonner toast 提示
+- **未登录功能禁用**（Discover.vue）：`isLoggedIn` 状态控制，播放前检查，未登录 toast 提示并引导跳转设置页
+- **路由/侧边栏更新**：`/app/discover` 路由 + 侧边栏 Compass 图标「发现」入口（Home 和 Search 之间）；Search.vue 新增 `?q=` query 参数支持，进入时自动搜索
 
 ### 项目结构 (模块化)
 
@@ -111,14 +118,14 @@ src/
 │   ├── Landing.vue              # 首次引导 (介绍→主题→隐私)
 │   ├── Home.vue                 # 主页 (欢迎+快速操作+最近播放)
 │   ├── Player.vue               # 播放页 (全屏独立路由，ZenIsland+歌词+封面+控制栏)
-│   ├── Search.vue               # 搜索页 (平铺/歌单墙切换)
+│   ├── Search.vue               # 搜索页 (平铺/歌单墙切换，支持 ?q= 查询参数)
+│   ├── Discover.vue             # 发现页 (三列式: 热歌榜+飙升榜+新歌榜)
 │   ├── Settings.vue             # 设置入口 (列表)
-│   ├── Playlists.vue            # 歌单列表 (新建+播放全部)
 │   ├── PlaylistDetail.vue       # 歌单详情 (歌曲列表+删除)
 │   └── settings/                # (LNProfile, 3RDAccount, Appearance, Privacy, About)
 ├── components/
 │   ├── SplashScreen.vue
-│   ├── AppLayout.vue            # 侧边栏+内容区 (首页/搜索/歌单/设置)
+│   ├── AppLayout.vue            # 侧边栏+内容区 (首页/发现/搜索/歌单/设置)
 │   ├── SongGrid.vue
 │   ├── SongWall.vue
 │   ├── player/
@@ -128,9 +135,10 @@ src/
 │   └── ui/                      # shadcn-vue 组件
 ├── lib/
 │   ├── api/                     # API 模块化 (request.ts + ncm.ts + index.ts)
-│   ├── player.ts                # 全局播放器 Store (AudioElement + reactive)
+│   ├── player.ts                # 全局播放器 Store (AudioElement + reactive + 听歌打卡)
 │   ├── lyrics.ts                # LRC 歌词解析
-│   └── store.ts                 # Tauri Store 持久化
+│   ├── store.ts                 # Tauri Store 持久化
+│   └── playlistCache.ts         # 歌单内存缓存 (含发现页榜单)
 ```
 
 ### 路由
@@ -140,7 +148,8 @@ src/
 - `/player` → **播放页**（独立全屏路由，优美过渡动画）
 - `/app` → AppLayout
     - `/app` → Home
-    - `/app/search` → Search
+    - `/app/discover` → **发现页** (热歌/飙升/新歌三榜)
+    - `/app/search` → Search (?q= 自动搜索)
     - `/app/playlists` → **歌单列表**
     - `/app/playlists/:id` → **歌单详情**
     - `/app/settings` → Settings 列表

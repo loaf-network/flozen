@@ -1,5 +1,11 @@
 import { reactive, ref, watch } from "vue"
-import { ncmSongUrl, ncmLyric, type SearchSong } from "./api"
+import {
+    ncmSongUrl,
+    ncmLyric,
+    ncmScrobble,
+    ncmSubmitPlayState,
+    type SearchSong,
+} from "./api"
 import { parseLrc, getCurrentLine, type LyricLine } from "./lyrics"
 import { loadConfig } from "./store"
 import { initMedia, updateMedia, clearMedia } from "./smtc"
@@ -85,6 +91,46 @@ let resumeTime = 0
 let pendingSeek = 0
 let saveTimer: ReturnType<typeof setTimeout> | null = null
 let lastTimeSave = 0
+
+// ── 听歌打卡 & 提交播放状态 ──
+let scrobbleTimer: ReturnType<typeof setTimeout> | null = null
+let lastSubmitTime = 0
+let currentSessionId = ""
+
+function generateSessionId(): string {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    let result = ""
+    for (let i = 0; i < 12; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return result
+}
+
+async function scrobbleSong(song: SearchSong, time: number) {
+    try {
+        const config = await loadConfig()
+        if (!config.ncmCookie) return
+        await ncmScrobble(song.id, song.al?.id ?? 0, time, config.ncmCookie)
+    } catch {
+        // 打卡失败不影响播放
+    }
+}
+
+async function submitPlayState(song: SearchSong, progress: number) {
+    try {
+        const config = await loadConfig()
+        if (!config.ncmCookie) return
+        const now = Date.now()
+        if (now - lastSubmitTime < 30000) return // 30秒内不重复提交
+        lastSubmitTime = now
+        if (!currentSessionId) {
+            currentSessionId = generateSessionId()
+        }
+        await ncmSubmitPlayState(song.id, progress, "list_loop", currentSessionId, config.ncmCookie)
+    } catch {
+        // 提交失败不影响播放
+    }
+}
 
 // ── 下一首预加载 + 智能随机 ──
 const playedShuffleIds = new Set<number>()
@@ -237,6 +283,10 @@ function updateTime() {
         lastTimeSave = now
         savePlayerSnapshot(snapshot())
     }
+    // 定期提交播放状态（每30秒）
+    if (player.currentSong && player.playing && now - lastSubmitTime > 30000) {
+        submitPlayState(player.currentSong, Math.floor(player.currentTime))
+    }
     // 快结束时提前准备下一首（音频 + 歌词）
     if (player.duration > 0 && player.duration - player.currentTime < 20) {
         preloadNext()
@@ -278,6 +328,15 @@ async function loadAndPlay(song: SearchSong, seekTo = 0) {
     playedShuffleIds.add(song.id)
     invalidatePlan()
     preloadFailedId = -1
+    currentSessionId = generateSessionId()
+    lastSubmitTime = 0
+
+    // 清除之前的打卡定时器
+    if (scrobbleTimer) {
+        clearTimeout(scrobbleTimer)
+        scrobbleTimer = null
+    }
+
     try {
         const cached = preloaded?.songId === song.id ? preloaded : null
         if (cached) {
@@ -289,6 +348,8 @@ async function loadAndPlay(song: SearchSong, seekTo = 0) {
             recordHistory(song)
             player.lyrics = cached.lyrics
             player.currentLyricIndex = getCurrentLine(player.lyrics, 0)
+            // 开始打卡计时（播放30秒后打卡）
+            startScrobbleTimer(song)
             return
         }
         const config = await loadConfig()
@@ -296,6 +357,17 @@ async function loadAndPlay(song: SearchSong, seekTo = 0) {
         const url = urlRes.data?.[0]?.url
         if (!url) {
             console.warn("No URL for song:", song.name)
+            // 检查是否为VIP歌曲或版权受限
+            if (urlRes.data?.[0]?.fee === 1) {
+                const { toast } = await import("vue-sonner")
+                toast.error("该歌曲为VIP专享，请开通VIP后播放")
+            } else if (urlRes.data?.[0]?.fee === 4) {
+                const { toast } = await import("vue-sonner")
+                toast.error("该歌曲需要购买专辑后播放")
+            } else {
+                const { toast } = await import("vue-sonner")
+                toast.error("该歌曲暂无版权，请尝试其他音源")
+            }
             return
         }
         audio.src = url
@@ -308,11 +380,22 @@ async function loadAndPlay(song: SearchSong, seekTo = 0) {
         const lrc = lyricRes.lrc?.lyric ?? ""
         player.lyrics = parseLrc(lrc)
         player.currentLyricIndex = getCurrentLine(player.lyrics, 0)
+        // 开始打卡计时（播放30秒后打卡）
+        startScrobbleTimer(song)
     } catch (err) {
         console.error("Load failed:", err)
     } finally {
         player.loading = false
     }
+}
+
+function startScrobbleTimer(song: SearchSong) {
+    // 播放30秒后进行打卡
+    scrobbleTimer = setTimeout(() => {
+        if (player.currentSong?.id === song.id && player.playing) {
+            scrobbleSong(song, Math.floor(song.dt / 1000))
+        }
+    }, 30000)
 }
 
 export function play(song?: SearchSong) {

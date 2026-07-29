@@ -29,6 +29,10 @@ export type {
     UserPlaylistRes,
     PlaylistCreateRes,
     LikeRes,
+    ToplistItem,
+    ToplistRes,
+    ScrobbleRes,
+    SubmitPlayStateRes,
 } from "./ncm"
 
 export {
@@ -50,4 +54,7 @@ export {
     ncmCreatePlaylist,
     ncmDeletePlaylist,
     ncmPlaylistTracksOp,
+    ncmToplist,
+    ncmScrobble,
+    ncmSubmitPlayState,
 } from "./ncm"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import { Music, Home, Settings, Search, ListMusic } from "@lucide/vue"
+import { Music, Home, Settings, Search, ListMusic, Compass } from "@lucide/vue"
 import PlaylistSidebar from "@/components/PlaylistSidebar.vue"
 
 const route = useRoute()
@@ -11,6 +11,7 @@ const showPlaylistSidebar = computed(() => route.path.startsWith("/app/playlists
 
 const nav = [
     { path: "/app", icon: Home, tip: "首页" },
+    { path: "/app/discover", icon: Compass, tip: "发现" },
     { path: "/app/search", icon: Search, tip: "搜索" },
     { path: "/app/playlists", icon: ListMusic, tip: "歌单" },
     { path: "/app/settings", icon: Settings, tip: "设置" },

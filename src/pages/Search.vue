@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue"
+import { ref, onMounted } from "vue"
 import { ArrowLeft, Search, Grid3x3, Box } from "@lucide/vue"
-import { useRouter } from "vue-router"
+import { useRouter, useRoute } from "vue-router"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ncmSearch, ncmSearchSuggest, ncmSearchHot, type SearchSong } from "@/lib/api"
@@ -10,6 +10,7 @@ import SongWall from "@/components/SongWall.vue"
 import { play } from "@/lib/player"
 
 const router = useRouter()
+const route = useRoute()
 const query = ref("")
 const results = ref<SearchSong[]>([])
 const suggests = ref<SearchSong[]>([])
@@ -114,7 +115,13 @@ async function loadHot() {
     }
 }
 
-loadHot()
+onMounted(() => {
+    loadHot()
+    const q = route.query.q as string
+    if (q) {
+        doSearch(q)
+    }
+})
 </script>
 
 <template>

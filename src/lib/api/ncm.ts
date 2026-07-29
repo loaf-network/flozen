@@ -223,3 +223,66 @@ export function ncmPlaylistTracksOp(
     if (cookie) params.cookie = cookie
     return post<{ code: number }>("/playlist/tracks", params)
 }
+
+// ─── Toplist ───
+
+export interface ToplistItem {
+    id: number
+    name: string
+    coverImgUrl: string
+    description: string
+    trackCount: number
+    playCount: number
+    updateFrequency?: string
+}
+
+export interface ToplistRes {
+    code: number
+    list: ToplistItem[]
+}
+
+export function ncmToplist() {
+    return post<ToplistRes>("/toplist")
+}
+
+// ─── Scrobble (听歌打卡) ───
+
+export interface ScrobbleRes {
+    code: number
+    message?: string
+}
+
+export function ncmScrobble(id: number, sourceid: number, time: number, cookie?: string) {
+    const params: Record<string, string> = {
+        id: String(id),
+        sourceid: String(sourceid),
+        time: String(time),
+    }
+    if (cookie) params.cookie = cookie
+    return post<ScrobbleRes>("/scrobble", params)
+}
+
+// ─── Submit Play State (提交播放状态) ───
+
+export interface SubmitPlayStateRes {
+    code: number
+    message?: string
+}
+
+export function ncmSubmitPlayState(
+    id: number,
+    progress: number,
+    playMode: string = "list_loop",
+    sessionId?: string,
+    cookie?: string,
+) {
+    const params: Record<string, string> = {
+        id: String(id),
+        progress: String(progress),
+        playMode,
+        type: "song",
+    }
+    if (sessionId) params.sessionId = sessionId
+    if (cookie) params.cookie = cookie
+    return post<SubmitPlayStateRes>("/relay/play/state/submit", params)
+}
