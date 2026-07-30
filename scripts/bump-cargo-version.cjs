@@ -1,12 +1,9 @@
 const fs = require("fs")
 const path = require("path")
+const { execSync } = require("child_process")
 
 const cargoPath = path.resolve(__dirname, "../src-tauri/Cargo.toml")
 const version = process.argv[2]
-
-console.log("cargoPath:", cargoPath)
-console.log("target version:", version)
-console.log("file exists:", fs.existsSync(cargoPath))
 
 if (!version) {
     console.error("No version provided")
@@ -14,12 +11,16 @@ if (!version) {
 }
 
 let content = fs.readFileSync(cargoPath, "utf8")
-const before = content
-// 匹配 version = "xxx"，不管后面有没有注释
 content = content.replace(/^(version\s*=\s*)"[^"]*"/m, `$1"${version}"`)
-console.log("changed:", content !== before)
-console.log("before:", before.split("\n")[2])
-console.log("after:", content.split("\n")[2])
-
 fs.writeFileSync(cargoPath, content, "utf8")
-console.log("write done")
+console.log(`Cargo.toml version -> ${version}`)
+
+try {
+    execSync("cargo check --quiet", {
+        cwd: path.resolve(__dirname, "../src-tauri"),
+        stdio: "ignore",
+    })
+    console.log("Cargo.lock updated")
+} catch {
+    console.warn("cargo check failed, Cargo.lock not updated")
+}
