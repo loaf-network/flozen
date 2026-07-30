@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.0](https://github.com/loaf-network/flozen/compare/v1.0.2...v1.1.0) (2026-07-30)
+
+### Bug Fixes
+
+* 还没修好哈哈 ([89991b0](https://github.com/loaf-network/flozen/commit/89991b01835f639e23b405c2025c23dd9bbbaaad))
+* 修复版本更新同步问题 ([9936dbd](https://github.com/loaf-network/flozen/commit/9936dbdd004ed71f32ac2f2a32ddf7cceb0771b6))
+* 修复版本同步问题 ([af1ea51](https://github.com/loaf-network/flozen/commit/af1ea5191ff69ebd716517ebf417571ccaaf1aba))
+* 修复更新后文件不提交的问题 ([a82ae11](https://github.com/loaf-network/flozen/commit/a82ae11a3100b8227f4ab224c2bb89af86d2d023))
+* 这次绝对修好了 ([6ced0bf](https://github.com/loaf-network/flozen/commit/6ced0bffae2bca62ed3d023f1525ceb9802995b4))
+
 ## [1.0.3](https://github.com/loaf-network/flozen/compare/v1.0.2...v1.0.3) (2026-07-30)
 
 ### Bug Fixes

@@ -1,6 +1,6 @@
 [package]
 name = "flozen"
-version = "1.0.3"  # 应用版本在 package.json 中统一维护
+version = "1.1.0"  # 应用版本在 package.json 中统一维护
 description = "轻量、简洁的音乐播放器"
 authors = ["you"]
 edition = "2021"
