@@ -12,7 +12,7 @@
     "autoGenerate": false
   },
   "hooks": {
-    "after:bump": "node -e \"const fs=require('fs');const f='src-tauri/Cargo.toml';let c=fs.readFileSync(f,'utf8');c=c.replace(/^version = \\\"[^\\\"]*\\\"/m,'version = \\\"${version}\\\"');fs.writeFileSync(f,c)\""
+    "after:bump": "node scripts/bump-cargo-version.js ${version}"
   },
   "plugins": {
     "@release-it/conventional-changelog": {
