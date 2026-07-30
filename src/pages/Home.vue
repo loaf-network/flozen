@@ -20,7 +20,7 @@ function onClearHistory() {
 
 <template>
     <div class="p-6">
-        <h1 class="text-3xl font-bold tracking-normal mb-6">你好，欢迎回到 Flozen</h1>
+        <h1 class="text-3xl font-bold tracking-normal mb-6">👋 你好，欢迎回到 Flozen</h1>
 
         <!-- 快速操作 -->
         <div class="grid grid-cols-2 gap-3 mb-6">

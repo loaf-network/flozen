@@ -46,7 +46,7 @@ onMounted(() => {
                 </Transition>
             </router-view>
         </div>
-        <MusicCapsule />
+        <MusicCapsule v-if="!onSplash" />
     </div>
     <Toaster />
 </template>

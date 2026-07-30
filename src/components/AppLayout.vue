@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import { Music, Home, Settings, Search, ListMusic, Compass, Lock } from "@lucide/vue"
+import { Home, Settings, Search, ListMusic, Compass, Lock } from "@lucide/vue"
 import { Button } from "@/components/ui/button"
 import { loadConfig } from "@/lib/store"
 import PlaylistSidebar from "@/components/PlaylistSidebar.vue"
@@ -42,11 +42,7 @@ function isActive(path: string) {
             >
                 <!-- Logo -->
                 <div class="flex items-center justify-center h-14 w-full">
-                    <div
-                        class="w-8 h-8 rounded-xl bg-gradient-to-br from-primary/80 to-orange-500/80 flex items-center justify-center"
-                    >
-                        <Music :size="16" :stroke-width="2" class="text-primary-foreground" />
-                    </div>
+                    <img src="/logo-round.png" alt="Flozen" class="w-8 h-8 rounded-xl" />
                 </div>
 
                 <!-- 导航 -->

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from "vue"
 import { useRouter } from "vue-router"
-import { Music } from "@lucide/vue"
 import { toast } from "vue-sonner"
 import { loadConfig, saveConfig } from "@/lib/store"
 import { getNcmAccount } from "@/lib/api"
@@ -34,12 +33,11 @@ onMounted(async () => {
 
 <template>
     <div class="splash">
-        <div class="splash-inner">
-            <div class="splash-logo">
-                <Music :size="26" :stroke-width="1.5" />
-            </div>
-            <p class="splash-title">Flozen</p>
-        </div>
+        <img
+            src="/flozen.png"
+            alt="Flozen"
+            class="splash-logo invert dark:invert-0"
+        />
     </div>
 </template>
 
@@ -50,52 +48,19 @@ onMounted(async () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #0a0807;
-}
-
-.splash-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    animation: splash-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    background: var(--background);
 }
 
 .splash-logo {
-    width: 60px;
-    height: 60px;
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    background: linear-gradient(135deg, oklch(0.62 0.17 22), oklch(0.66 0.16 45));
-    box-shadow: 0 8px 32px oklch(0.62 0.17 22 / 0.35);
-    animation: splash-breathe 2.2s ease-in-out infinite;
+    width: min(60vw, 360px);
+    height: auto;
+    animation: splash-fadein 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.splash-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.85);
-}
-
-@keyframes splash-in {
+@keyframes splash-fadein {
     from {
         opacity: 0;
-        transform: translateY(8px);
-    }
-}
-
-@keyframes splash-breathe {
-    0%,
-    100% {
-        transform: scale(1);
-        box-shadow: 0 8px 32px oklch(0.62 0.17 22 / 0.35);
-    }
-    50% {
-        transform: scale(1.05);
-        box-shadow: 0 8px 44px oklch(0.62 0.17 22 / 0.55);
+        transform: scale(0.96);
     }
 }
 </style>

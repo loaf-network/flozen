@@ -5,7 +5,6 @@ import {
     ArrowLeft,
     ExternalLink,
     Globe,
-    Music,
     MessageSquare,
     Star,
     Download,
@@ -72,11 +71,11 @@ const links = [
             class="mb-6 p-6 rounded-2xl bg-gradient-to-br from-primary/5 via-primary/3 to-transparent border border-primary/10"
         >
             <div class="flex items-center gap-4">
-                <div
-                    class="size-14 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0 shadow-sm shadow-primary/10"
-                >
-                    <Music :size="24" :stroke-width="1.5" class="text-primary" />
-                </div>
+                <img
+                    src="/logo.svg"
+                    alt="Flozen"
+                    class="size-14 rounded-2xl flex-shrink-0 shadow-sm shadow-primary/10"
+                />
                 <div class="flex-1 min-w-0">
                     <h2 class="text-lg font-bold tracking-normal">Flozen</h2>
                     <p class="text-sm text-muted-foreground mt-0.5">
