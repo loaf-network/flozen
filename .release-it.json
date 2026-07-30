@@ -12,7 +12,7 @@
     "autoGenerate": false
   },
   "hooks": {
-    "after:bump": "node scripts/bump-cargo-version.cjs ${version}"
+    "after:bump": "node scripts/bump-cargo-version.cjs ${version} && git add src-tauri/Cargo.toml"
   },
   "plugins": {
     "@release-it/conventional-changelog": {
