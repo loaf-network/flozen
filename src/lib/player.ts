@@ -1,4 +1,6 @@
 import { reactive, ref, watch } from "vue"
+import { toast } from "vue-sonner"
+import router from "@/router"
 import {
     ncmSongUrl,
     ncmLyric,
@@ -444,13 +446,10 @@ async function loadAndPlay(song: SearchSong, seekTo = 0) {
         if (!url) {
             // 检查是否为VIP歌曲或版权受限
             if (urlData?.[0]?.fee === 1) {
-                const { toast } = await import("vue-sonner")
                 toast.error("该歌曲为VIP专享，请开通VIP后播放。")
             } else if (urlData?.[0]?.fee === 4) {
-                const { toast } = await import("vue-sonner")
                 toast.error("该歌曲需要购买专辑后播放。")
             } else {
-                const { toast } = await import("vue-sonner")
                 toast.error("该歌曲暂无版权，请尝试其他音源。")
             }
             return
@@ -490,18 +489,11 @@ async function checkLoginBeforePlay(): Promise<boolean> {
     try {
         const config = await loadConfig()
         if (!config.ncmCookie) {
-            const { toast } = await import("vue-sonner")
             toast.error("请先登录网易云账号。")
             // 延迟跳转登录页，让用户看到提示
             if (loginRedirectTimer) clearTimeout(loginRedirectTimer)
-            loginRedirectTimer = setTimeout(async () => {
-                try {
-                    const { useRouter } = await import("vue-router")
-                    const router = useRouter()
-                    router.push("/app/settings/ncm")
-                } catch {
-                    // 非路由环境忽略
-                }
+            loginRedirectTimer = setTimeout(() => {
+                router.push("/app/settings/ncm")
             }, 1500)
             return false
         }

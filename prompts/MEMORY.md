@@ -64,6 +64,7 @@
 
 ### 最近完成
 
+- **构建警告清理**：`vue-sonner`/`vue-router` 动态导入全部改静态（vue-sonner 已被 App.vue 静态引入、router 改为直接导入 `@/router` 单例——顺带修复原 `useRouter()` 在 setTimeout 回调中 inject 失效导致跳转被吞的问题）；`smtc.ts` 动态导入 `player.ts` 为循环依赖规避，保留（警告无害）；`npm run build` 通过，仅剩该条无害警告
 - **realIP 设置（隐私页）+ 音质按钮换行**：Privacy.vue 新增「网络标识（realIP）」区块（Input 手动设置/保存、自动获取按钮，`getRealIP` 导出并支持 force 强制刷新）；播放器音质按钮 4 字音质名（高清臻音/超清母带）自动换行
 - **SVIP 判定修复 + 会员状态展示**：`getVipLevel` 恢复 `musicPackage` 字段作为 SVIP 主判据（黑胶 SVIP 音乐包存在即 SVIP，redVipLevel≥7 兜底）——此前只信 `redVipLevel>=7` 导致真实 SVIP 被误判为普通 VIP；音质 Dialog 现展示「当前会员：黑胶 SVIP/VIP/非会员」便于自查
 - **AddToPlaylistDialog 滚动条美化**：歌单列表自定义滚动条（6px 圆角细条，`--muted-foreground` 语义色，hover 加深）

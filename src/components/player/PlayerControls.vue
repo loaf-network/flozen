@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, watch } from "vue"
+import { toast } from "vue-sonner"
 import {
     Play,
     Pause,
@@ -76,13 +77,11 @@ async function pickQuality(value: QualityOption["value"]) {
     const opt = QUALITY_OPTIONS.find((o) => o.value === value)
     if (!opt) return
     if (!qualityAllowed(opt)) {
-        const { toast } = await import("vue-sonner")
         toast.error(`「${opt.label}」音质需${opt.vip === "svip" ? "黑胶 SVIP" : "黑胶 VIP"}会员。`)
         return
     }
     setQuality(value)
     qualityOpen.value = false
-    const { toast } = await import("vue-sonner")
     toast.success(`已切换至${opt.label}音质。`)
 }
 
@@ -111,10 +110,8 @@ async function onLike() {
         const next = await toggleLike(song)
         // 防竞态：操作期间切歌则不覆盖当前歌曲状态
         if (player.currentSong?.id === song.id) liked.value = next
-        const { toast } = await import("vue-sonner")
         toast.success(next ? "已喜欢这首歌。" : "已取消喜欢。")
     } catch {
-        const { toast } = await import("vue-sonner")
         toast.error("操作失败，请确认已登录网易云账号。")
     } finally {
         likePending = false

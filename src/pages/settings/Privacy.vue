@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue"
+import { toast } from "vue-sonner"
 import { useRouter } from "vue-router"
 import { ArrowLeft, Loader2 } from "@lucide/vue"
 import { Button } from "@/components/ui/button"
@@ -31,7 +32,6 @@ function toggleClarity(v: boolean | "indeterminate") {
 async function saveRealIP() {
     const v = realIP.value.trim()
     await saveConfig("realIP", v)
-    const { toast } = await import("vue-sonner")
     toast.success(v ? "已设置 realIP。" : "已清除 realIP，下次请求将自动获取。")
 }
 
@@ -40,7 +40,6 @@ async function fetchRealIP() {
     try {
         const ip = await getRealIP(true)
         realIP.value = ip || ""
-        const { toast } = await import("vue-sonner")
         toast.success(ip ? `已获取到公网 IP：${ip}。` : "获取公网 IP 失败，请检查网络后重试。")
     } finally {
         realIPFetching.value = false

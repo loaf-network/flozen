@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from "vue"
+import { toast } from "vue-sonner"
 import { Loader2, Plus, Music, ListPlus } from "@lucide/vue"
 import {
     Dialog,
@@ -43,12 +44,10 @@ async function addTo(pid: number) {
     if (!props.song) return
     try {
         await addSongToPlaylist(pid, props.song.id)
-        const { toast } = await import("vue-sonner")
         toast.success("已添加到歌单。")
         emit("update:open", false)
     } catch (e) {
         const msg = e instanceof Error ? e.message : ""
-        const { toast } = await import("vue-sonner")
         if (msg === "not-logged-in") toast.error("请先登录网易云账号。")
         else if (msg && msg !== "add-failed") toast.error(`添加失败：${msg}。`)
         else toast.error("添加失败，请稍后重试。")
@@ -61,12 +60,10 @@ async function createAndAdd() {
     creating.value = true
     try {
         await createPlaylistAndAdd(name, props.song.id)
-        const { toast } = await import("vue-sonner")
         toast.success(`已创建歌单「${name}」并添加歌曲。`)
         emit("update:open", false)
     } catch (e) {
         const msg = e instanceof Error ? e.message : ""
-        const { toast } = await import("vue-sonner")
         if (msg === "not-logged-in") toast.error("请先登录网易云账号。")
         else if (msg && msg !== "create-failed") toast.error(`创建失败：${msg}。`)
         else toast.error("创建失败，请稍后重试。")
