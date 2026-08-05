@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue"
-import { ArrowLeft, Search, Grid3x3, Box } from "@lucide/vue"
+import { ArrowLeft, Search } from "@lucide/vue"
 import { useRouter, useRoute } from "vue-router"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ncmSearch, ncmSearchSuggest, ncmSearchHot, type SearchSong } from "@/lib/api"
 import SongGrid from "@/components/SongGrid.vue"
-import SongWall from "@/components/SongWall.vue"
 import { play } from "@/lib/player"
 
 const router = useRouter()
@@ -15,7 +14,6 @@ const query = ref("")
 const results = ref<SearchSong[]>([])
 const suggests = ref<SearchSong[]>([])
 const hotTags = ref<{ first: string; second: number }[]>([])
-const viewMode = ref<"flat" | "3d">("flat")
 const loading = ref(false)
 const loadingMore = ref(false)
 const showSuggest = ref(false)
@@ -43,7 +41,17 @@ function onInput() {
         }
         try {
             const res = await ncmSearchSuggest(q)
-            suggests.value = res.result?.songs?.slice(0, 6) ?? []
+            // /search/suggest 的 songs 使用 artists/album/duration 字段，
+            // 与 /cloudsearch 的 ar/al/dt 不同，这里归一化为标准 SearchSong
+            suggests.value = (res.result?.songs ?? []).slice(0, 6).map((s) => ({
+                id: s.id,
+                name: s.name,
+                ar: (s.artists ?? []).map((a) => ({ id: a.id, name: a.name })),
+                al: s.album
+                    ? { id: s.album.id, name: s.album.name, picUrl: s.album.picUrl ?? "" }
+                    : { id: -1, name: "", picUrl: "" },
+                dt: s.duration ?? 0,
+            }))
         } catch {
             suggests.value = []
         }
@@ -164,6 +172,7 @@ onMounted(() => {
                     @mousedown.prevent="pickSuggest(s)"
                 >
                     <img
+                        v-if="s.al.picUrl"
                         :src="`${s.al.picUrl}?param=64y64`"
                         referrerpolicy="no-referrer"
                         class="w-8 h-8 rounded-md object-cover"
@@ -176,28 +185,6 @@ onMounted(() => {
                     </div>
                 </button>
             </div>
-        </div>
-
-        <!-- View toggle -->
-        <div v-if="searched && !loading" class="flex items-center gap-2 px-6 mb-4 shrink-0">
-            <Button
-                :variant="viewMode === 'flat' ? 'default' : 'ghost'"
-                size="sm"
-                class="gap-1.5"
-                @click="viewMode = 'flat'"
-            >
-                <Grid3x3 :size="14" />
-                平铺
-            </Button>
-            <Button
-                :variant="viewMode === '3d' ? 'default' : 'ghost'"
-                size="sm"
-                class="gap-1.5"
-                @click="viewMode = '3d'"
-            >
-                <Box :size="14" />
-                3D
-            </Button>
         </div>
 
         <!-- Content area -->
@@ -217,18 +204,9 @@ onMounted(() => {
             <!-- Results -->
             <template v-else-if="results.length > 0">
                 <SongGrid
-                    v-if="viewMode === 'flat'"
                     :songs="results"
                     :loading-more="loadingMore"
                     :has-more="hasMore"
-                    @play="onPlay"
-                />
-                <SongWall
-                    v-else
-                    :songs="results"
-                    :loading-more="loadingMore"
-                    :has-more="hasMore"
-                    @load-more="loadMore"
                     @play="onPlay"
                 />
             </template>

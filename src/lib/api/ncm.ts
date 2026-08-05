@@ -49,10 +49,20 @@ export interface SearchSong {
     dt: number
 }
 
+// /search/suggest 返回结构与 /cloudsearch 不同：songs 使用 artists/album/duration，
+// 而非 cloudsearch 的 ar/al/dt（见 SearchSong），此处单独声明其原始结构
+export interface SearchSuggestSong {
+    id: number
+    name: string
+    artists?: { id: number; name: string }[]
+    album?: { id: number; name: string; picUrl?: string }
+    duration?: number
+}
+
 export interface SearchSuggestRes {
     code: number
     result: {
-        songs: SearchSong[]
+        songs?: SearchSuggestSong[]
     }
 }
 
