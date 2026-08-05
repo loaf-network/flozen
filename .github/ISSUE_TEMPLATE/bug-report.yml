@@ -1,0 +1,106 @@
+name: 🐛 Bug 反馈
+description: 报告一个 Bug，帮助我们快速定位并修复。
+labels: ["Bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 感谢反馈 🙏
+
+        请尽量完整地填写以下信息，以便我们更快地复现并修复问题。提交前，请先[搜索现有 Issue](https://github.com/loaf-network/flozen/issues)，确认没有重复反馈。
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 请清晰、简洁地描述你遇到的问题。
+      placeholder: "例如：播放歌曲时点击「下一首」没有反应，随后界面卡死。"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 请按顺序列出复现问题的完整步骤，步骤越详细越好。
+      placeholder: |
+        1. 打开 Flozen 并登录网易云账号。
+        2. 搜索「h3r3」，点击任意歌曲开始播放。
+        3. 在播放页点击「下一首」。
+        4. 观察：界面无响应，无法继续操作。
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为
+      description: 请描述你期望发生的结果。
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为
+      description: 请描述实际发生的情况。如有报错信息、截图或录屏，请一并附上。
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志或报错信息
+      description: 如有控制台输出或日志文件内容，请粘贴到这里（注意抹去账号、Cookie 等敏感信息）。
+      render: shell
+
+  - type: markdown
+    attributes:
+      value: "## 环境信息"
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: 操作系统
+      description: 请选择你使用的操作系统。
+      options:
+        - Windows 10
+        - Windows 11
+        - macOS（Intel）
+        - macOS（Apple Silicon）
+        - Linux
+        - 其他
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 应用版本
+      description: 可在「设置 → 关于」页面查看版本号。
+      placeholder: "例如：v1.1.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: provider
+    attributes:
+      label: 音乐来源
+      description: 请选择问题发生的音乐平台。
+      options:
+        - 网易云音乐
+        - 与问题无关
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 自查清单
+      description: 提交前，请确认以下事项。
+      options:
+        - label: 我已确认使用的是最新版本（可在「设置 → 关于」中检查更新）
+          required: true
+        - label: 我已搜索过现有 Issue，确认没有重复反馈
+          required: true
+        - label: 我已尝试重启应用并重新登录，问题仍然存在

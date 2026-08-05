@@ -1,0 +1,52 @@
+name: 🚀 优化建议
+description: 提出性能、体验或代码层面的优化建议。
+labels: ["优化"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 优化建议 🔧
+
+        无论是性能卡顿、操作繁琐还是代码结构问题，都欢迎提出。提交前，请先[搜索现有 Issue](https://github.com/loaf-network/flozen/issues)，确认没有重复建议。
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 优化内容
+      description: 请描述你想优化的点（性能、界面体验、代码结构等）。
+      placeholder: "例如：搜索页在输入时明显卡顿，希望优化搜索联想的速度。"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 当前问题
+      description: 当前实现存在什么问题？如有数据（如耗时、内存占用等）或截图，请一并提供。
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望效果
+      description: 优化后，你期望达到什么效果？
+    validations:
+      required: true
+
+  - type: textarea
+    id: approach
+    attributes:
+      label: 实现思路（可选）
+      description: 如有实现想法、参考方案或相关代码位置，可以写在这里。
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 自查清单
+      description: 提交前，请确认以下事项。
+      options:
+        - label: 我已确认使用的是最新版本（可在「设置 → 关于」中检查更新）
+          required: true
+        - label: 我已搜索过现有 Issue，确认没有重复建议
+          required: true
