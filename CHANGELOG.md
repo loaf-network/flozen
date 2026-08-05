@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.1](https://github.com/loaf-network/flozen/compare/v1.2.0...v1.2.1) (2026-08-05)
+
+### Bug Fixes
+
+* PlayerSnapshot 类型未同步 ([039140f](https://github.com/loaf-network/flozen/commit/039140fc05bb8775293e02c8bfa51f613d0b906c))
+
 ## [1.2.0](https://github.com/loaf-network/flozen/compare/v1.1.0...v1.2.0) (2026-08-05)
 
 ### Features
