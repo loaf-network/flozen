@@ -1,6 +1,7 @@
 import { loadConfig, saveConfig } from "../store"
 
-const BASE = import.meta.env.VITE_API_NCM_BASE as string
+// 去除 BASE 尾部的斜杠，拼接时统一为单斜杠，避免出现 `//path` 导致的重定向/CORS 问题
+const BASE = (import.meta.env.VITE_API_NCM_BASE as string).replace(/\/+$/, "")
 
 function ts() {
     return Date.now()
@@ -35,7 +36,8 @@ export async function post<T>(path: string, params?: Record<string, string>): Pr
     const query = new URLSearchParams({ timestamp: String(ts()) })
     if (realIP) query.set("realIP", realIP)
     const body = new URLSearchParams(params)
-    const r = await fetch(`${BASE}${path}?${query}`, {
+    const url = `${BASE}/${path.replace(/^\/+/, "")}?${query}`
+    const r = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body,
