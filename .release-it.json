@@ -1,25 +1,25 @@
 {
-  "git": {
-    "commitMessage": "release: v${version}",
-    "tagName": "v${version}"
-  },
-  "npm": {
-    "publish": false
-  },
-  "github": {
-    "release": true,
-    "releaseName": "v${version}",
-    "autoGenerate": false
-  },
-  "hooks": {
-    "after:bump": "node scripts/bump-cargo-version.cjs ${version} && git add src-tauri/Cargo.toml && git add src-tauri/Cargo.lock"
-  },
-  "plugins": {
-    "@release-it/conventional-changelog": {
-      "preset": {
-        "name": "conventionalcommits"
-      },
-      "infile": "CHANGELOG.md"
+    "git": {
+        "commitMessage": "release: v${version}",
+        "tagName": "v${version}"
+    },
+    "npm": {
+        "publish": false
+    },
+    "github": {
+        "release": true,
+        "releaseName": "v${version}",
+        "autoGenerate": false
+    },
+    "hooks": {
+        "after:bump": "node scripts/bump-cargo-version.cjs ${version} && git add src-tauri/Cargo.toml && git add src-tauri/Cargo.lock"
+    },
+    "plugins": {
+        "@release-it/conventional-changelog": {
+            "preset": {
+                "name": "conventionalcommits"
+            },
+            "infile": "CHANGELOG.md"
+        }
     }
-  }
 }

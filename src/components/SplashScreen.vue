@@ -33,11 +33,7 @@ onMounted(async () => {
 
 <template>
     <div class="splash">
-        <img
-            src="/flozen.png"
-            alt="Flozen"
-            class="splash-logo invert dark:invert-0"
-        />
+        <img src="/flozen.png" alt="Flozen" class="splash-logo invert dark:invert-0" />
     </div>
 </template>
 

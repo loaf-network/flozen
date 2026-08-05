@@ -64,6 +64,7 @@
 
 ### 最近完成
 
+- **搜索页状态保持**：新增 `src/lib/searchState.ts`（模块级 reactive 单例，仿 player.ts 模式），Search.vue 的 query/results/suggests/hotTags/searched/offset/hasMore/scrollTop 全部迁入，路由切换（组件卸载重建）后回来自动接续上次搜索结果与滚动位置；`?q=` 跳转带新关键词时触发新搜索且不恢复旧滚动位置；doSearch 加 searchSeq 竞态防护（仅最新请求生效）
 - **移除 3D 歌曲墙（SongWall.vue）**：删除 `src/components/SongWall.vue` 及 Search.vue 中全部 3D 相关代码（`viewMode` 状态、平铺/3D 切换按钮、SongWall 分支），搜索结果固定使用 SongGrid 平铺网格；PlaylistDetail.vue 的「画廊/列表」切换与 3D 无关，保留；grep 确认无残留引用
 - **修复 issue #1（搜索建议下拉渲染崩溃）**：`/search/suggest` 返回的 songs 用 `artists`/`album`/`duration` 字段，与 `/cloudsearch` 的 `ar`/`al`/`dt` 不同；Search.vue 建议下拉原按 `s.al.picUrl`/`s.ar.map` 渲染导致 `TypeError` 使整个搜索页渲染失败（输入任意字符即闪烁/不显示）。修复：ncm.ts 新增 `SearchSuggestSong` 原始类型（修正 `SearchSuggestRes` 的错误标注），Search.vue 将 suggest 数据归一化为标准 `SearchSong`（album 缺失时兜底 `{id:-1,name:"",picUrl:""}`），img 加 `v-if="s.al.picUrl"` 防御空图；review 确认无其他同类字段假设错误
 - **Issue Template 新增**：`.github/ISSUE_TEMPLATE/` 下新增三个结构化表单（GitHub form schema）：`bug-report.yml`（label: `Bug`）、`feature-request.yml`（label: `新功能`）、`optimization.yml`（label: `优化`——用户将原「文档」改为「优化」，仓库无文档 label）；模板名称无 emoji（`bug 反馈`/`新功能请求`/`优化建议`），**无 title 字段**，**无 markdown 区块**（保持简洁），**checkboxes 自查清单置于表单最上方**（用户后续要求删除「已确认最新版本」项，与 bug 模板的版本输入框重复；三个模板统一简化——bug 保留 2 项：搜索 Issue + 重启重登；feature/optimization 各保留 1 项：搜索 Issue），文案统一中文标点，bug 模板音乐来源选项为用户自改（网易云音乐 / 与问题无关）；已用 Python 校验 YAML 语法与 schema 合法

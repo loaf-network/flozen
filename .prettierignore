@@ -4,3 +4,4 @@ node_modules
 .agents
 prompts
 src/components/ui/
+.github/workflows/

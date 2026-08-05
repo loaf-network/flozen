@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue"
+import { ref, onMounted, nextTick } from "vue"
 import { ArrowLeft, Search } from "@lucide/vue"
 import { useRouter, useRoute } from "vue-router"
 import { Input } from "@/components/ui/input"
@@ -7,43 +7,39 @@ import { Button } from "@/components/ui/button"
 import { ncmSearch, ncmSearchSuggest, ncmSearchHot, type SearchSong } from "@/lib/api"
 import SongGrid from "@/components/SongGrid.vue"
 import { play } from "@/lib/player"
+import { searchState } from "@/lib/searchState"
 
 const router = useRouter()
 const route = useRoute()
-const query = ref("")
-const results = ref<SearchSong[]>([])
-const suggests = ref<SearchSong[]>([])
-const hotTags = ref<{ first: string; second: number }[]>([])
 const loading = ref(false)
 const loadingMore = ref(false)
 const showSuggest = ref(false)
-const searched = ref(false)
-const offset = ref(0)
-const hasMore = ref(true)
+const contentEl = ref<HTMLElement>()
 const COLS = 7
 const LIMIT = COLS * 5
 
 let debounceTimer: ReturnType<typeof setTimeout>
+let searchSeq = 0 // doSearch 竞态防护：仅接受最新一次搜索的结果
 
 function onInput() {
-    if (!query.value.trim()) {
-        suggests.value = []
+    if (!searchState.query.trim()) {
+        searchState.suggests = []
         showSuggest.value = false
         return
     }
     showSuggest.value = true
     clearTimeout(debounceTimer)
     debounceTimer = setTimeout(async () => {
-        const q = query.value.trim()
+        const q = searchState.query.trim()
         if (!q) {
-            suggests.value = []
+            searchState.suggests = []
             return
         }
         try {
             const res = await ncmSearchSuggest(q)
             // /search/suggest 的 songs 使用 artists/album/duration 字段，
             // 与 /cloudsearch 的 ar/al/dt 不同，这里归一化为标准 SearchSong
-            suggests.value = (res.result?.songs ?? []).slice(0, 6).map((s) => ({
+            searchState.suggests = (res.result?.songs ?? []).slice(0, 6).map((s) => ({
                 id: s.id,
                 name: s.name,
                 ar: (s.artists ?? []).map((a) => ({ id: a.id, name: a.name })),
@@ -53,40 +49,43 @@ function onInput() {
                 dt: s.duration ?? 0,
             }))
         } catch {
-            suggests.value = []
+            searchState.suggests = []
         }
     }, 300)
 }
 
 async function doSearch(keyword: string) {
-    query.value = keyword
+    const seq = ++searchSeq
+    searchState.query = keyword
     showSuggest.value = false
-    searched.value = true
+    searchState.searched = true
     loading.value = true
-    results.value = []
-    offset.value = 0
-    hasMore.value = true
+    searchState.results = []
+    searchState.offset = 0
+    searchState.hasMore = true
     try {
         const res = await ncmSearch(keyword, LIMIT, 0)
-        results.value = res.result?.songs ?? []
-        hasMore.value = results.value.length > 0
-        offset.value = results.value.length
+        if (seq !== searchSeq) return // 已有更新的搜索，丢弃本次结果
+        searchState.results = res.result?.songs ?? []
+        searchState.hasMore = searchState.results.length > 0
+        searchState.offset = searchState.results.length
     } catch {
-        results.value = []
+        if (seq !== searchSeq) return
+        searchState.results = []
     } finally {
-        loading.value = false
+        if (seq === searchSeq) loading.value = false
     }
 }
 
 async function loadMore() {
-    if (loadingMore.value || !hasMore.value || !query.value.trim()) return
+    if (loadingMore.value || !searchState.hasMore || !searchState.query.trim()) return
     loadingMore.value = true
     try {
-        const res = await ncmSearch(query.value.trim(), COLS * 2, offset.value)
+        const res = await ncmSearch(searchState.query.trim(), COLS * 2, searchState.offset)
         const more = res.result?.songs ?? []
-        offset.value += more.length
-        results.value = [...results.value, ...more]
-        hasMore.value = more.length > 0
+        searchState.offset += more.length
+        searchState.results = [...searchState.results, ...more]
+        searchState.hasMore = more.length > 0
     } catch {
         // ignore
     } finally {
@@ -96,6 +95,7 @@ async function loadMore() {
 
 function onScroll(e: Event) {
     const el = e.currentTarget as HTMLElement
+    searchState.scrollTop = el.scrollTop
     if (el.scrollHeight - el.scrollTop - el.clientHeight < 300) {
         loadMore()
     }
@@ -117,17 +117,24 @@ function hideSuggest() {
 async function loadHot() {
     try {
         const res = await ncmSearchHot()
-        hotTags.value = res.result?.hots ?? []
+        searchState.hotTags = res.result?.hots ?? []
     } catch {
         // ignore
     }
 }
 
 onMounted(() => {
-    loadHot()
+    // 已有搜索历史时直接接续上次结果；否则加载热门搜索
+    if (!searchState.searched && searchState.hotTags.length === 0) {
+        loadHot()
+    }
     const q = route.query.q as string
-    if (q) {
+    const resumed = !(q && (q !== searchState.query || !searchState.searched))
+    if (!resumed) {
         doSearch(q)
+    } else if (searchState.scrollTop > 0) {
+        // 接续上次结果时恢复滚动位置（新搜索则不恢复）
+        nextTick(() => contentEl.value?.scrollTo(0, searchState.scrollTop))
     }
 })
 </script>
@@ -150,11 +157,11 @@ onMounted(() => {
                     class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 />
                 <Input
-                    v-model="query"
+                    v-model="searchState.query"
                     placeholder="搜索音乐、歌手..."
                     class="pl-9 h-11 bg-muted/70 border-border/40 focus:border-primary/60 focus:ring-1 focus:ring-primary/20"
                     @input="onInput"
-                    @keydown.enter="query.trim() && doSearch(query.trim())"
+                    @keydown.enter="searchState.query.trim() && doSearch(searchState.query.trim())"
                     @focus="onInput"
                     @blur="hideSuggest"
                 />
@@ -162,11 +169,11 @@ onMounted(() => {
 
             <!-- Suggest dropdown -->
             <div
-                v-if="showSuggest && suggests.length > 0"
+                v-if="showSuggest && searchState.suggests.length > 0"
                 class="absolute left-6 right-6 mt-1 bg-popover border border-border rounded-2xl shadow-2xl overflow-hidden z-50"
             >
                 <button
-                    v-for="s in suggests"
+                    v-for="s in searchState.suggests"
                     :key="s.id"
                     class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-accent/50 transition-colors text-left"
                     @mousedown.prevent="pickSuggest(s)"
@@ -188,7 +195,11 @@ onMounted(() => {
         </div>
 
         <!-- Content area -->
-        <div class="flex-1 overflow-auto px-6 pb-6 min-h-0" @scroll.passive="onScroll">
+        <div
+            ref="contentEl"
+            class="flex-1 overflow-auto px-6 pb-6 min-h-0"
+            @scroll.passive="onScroll"
+        >
             <!-- Loading -->
             <div v-if="loading" class="flex items-center justify-center h-40">
                 <div
@@ -202,17 +213,17 @@ onMounted(() => {
             </div>
 
             <!-- Results -->
-            <template v-else-if="results.length > 0">
+            <template v-else-if="searchState.results.length > 0">
                 <SongGrid
-                    :songs="results"
+                    :songs="searchState.results"
                     :loading-more="loadingMore"
-                    :has-more="hasMore"
+                    :has-more="searchState.hasMore"
                     @play="onPlay"
                 />
             </template>
 
             <!-- No results -->
-            <div v-else-if="searched" class="flex items-center justify-center h-40">
+            <div v-else-if="searchState.searched" class="flex items-center justify-center h-40">
                 <div class="rounded-full bg-muted/50 px-5 py-2 border border-border/40">
                     <span class="text-sm text-muted-foreground">没有找到相关结果</span>
                 </div>
@@ -223,7 +234,7 @@ onMounted(() => {
                 <p class="text-sm text-muted-foreground mb-3">热门搜索</p>
                 <div class="flex flex-wrap gap-2">
                     <button
-                        v-for="(tag, idx) in hotTags"
+                        v-for="(tag, idx) in searchState.hotTags"
                         :key="tag.first"
                         :class="[
                             'px-4 py-2 rounded-full text-sm transition-colors',

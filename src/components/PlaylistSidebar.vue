@@ -103,13 +103,21 @@ async function doCreate() {
             <div class="flex items-center gap-1">
                 <button
                     class="sidebar-action"
-                    @click="requireLogin().then((ok) => { if (ok) fetchPlaylists(true) })"
+                    @click="
+                        requireLogin().then((ok) => {
+                            if (ok) fetchPlaylists(true)
+                        })
+                    "
                 >
                     <RefreshCw :size="14" :class="loading && 'animate-spin'" />
                 </button>
                 <button
                     class="sidebar-action"
-                    @click="requireLogin().then((ok) => { if (ok) showCreate = true })"
+                    @click="
+                        requireLogin().then((ok) => {
+                            if (ok) showCreate = true
+                        })
+                    "
                 >
                     <Plus :size="14" />
                 </button>
