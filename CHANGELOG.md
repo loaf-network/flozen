@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.2.0](https://github.com/loaf-network/flozen/compare/v1.1.0...v1.2.0) (2026-08-05)
+
+### Features
+
+* 增加音质切换与完善歌曲相关功能 ([80d814b](https://github.com/loaf-network/flozen/commit/80d814b77b6ce59bd7443be47139ea8e41525a95))
+* **search:** 实现搜索状态持久化 ([0ed85ad](https://github.com/loaf-network/flozen/commit/0ed85ad6725ea50dd4f2c0a1765684315cb041ae))
+
+### Bug Fixes
+
+* 搜索界面无法正常显示，同时去除了 SongWall ([c7838fc](https://github.com/loaf-network/flozen/commit/c7838fcda4072e669c71e03b94febbca551850c7)), closes [#1](https://github.com/loaf-network/flozen/issues/1)
+
 ## [1.1.0](https://github.com/loaf-network/flozen/compare/v1.0.2...v1.1.0) (2026-07-30)
 
 ### Bug Fixes
