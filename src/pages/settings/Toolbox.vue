@@ -32,7 +32,7 @@ async function getCurrentSize() {
         width.value = Math.round(logical.width)
         height.value = Math.round(logical.height)
     } catch {
-        toast.error("获取窗口大小失败")
+        toast.error("获取窗口大小失败。")
     }
 }
 
@@ -42,9 +42,9 @@ async function applySize() {
         const win = getCurrentWindow()
         const { LogicalSize } = await import("@tauri-apps/api/dpi")
         await win.setSize(new LogicalSize(width.value, height.value))
-        toast.success(`窗口已调整为 ${width.value} × ${height.value}`)
+        toast.success(`窗口已调整为 ${width.value} × ${height.value}。`)
     } catch {
-        toast.error("调整窗口大小失败")
+        toast.error("调整窗口大小失败。")
     }
 }
 

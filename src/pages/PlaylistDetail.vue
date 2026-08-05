@@ -83,7 +83,7 @@ function onPlay(song: SearchSong) {
     router.push("/player")
 }
 function checkLogin() {
-    if (!isLoggedIn.value) toast.error("请先登录网易云账号")
+    if (!isLoggedIn.value) toast.error("请先登录网易云账号。")
     return isLoggedIn.value
 }
 function doRefresh() {

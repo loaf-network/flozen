@@ -55,7 +55,7 @@ async function loadData(force = false) {
         if (newSongRes.playlist)
             setCachedDetail(NEW_SONG_PLAYLIST_ID, newSongRes.playlist, newSongPlaylist.value)
     } catch {
-        toast.error("数据加载失败，请稍后重试")
+        toast.error("数据加载失败，请稍后重试。")
     } finally {
         loading.value = false
     }
@@ -67,7 +67,7 @@ function onRefresh() {
 
 function onPlay(song: SearchSong) {
     if (!isLoggedIn.value) {
-        toast.error("请先登录网易云账号")
+        toast.error("请先登录网易云账号。")
         return
     }
     play(song)

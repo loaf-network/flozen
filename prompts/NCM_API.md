@@ -88,6 +88,7 @@ v4.29.9 加入了生成随机中国 IP 功能, 在请求时加上 `randomCNIP=tr
 5. 直接点`Continue`
 6. `PROJECT NAME`自己填,`FRAMEWORK PRESET` 选 `Other` 然后直接点 `Deploy` 接着等部署完成即可
 
+
 ## 腾讯云 serverless 部署
 
 因 `Vercel` 在国内访问太慢(不绑定自己的域名的情况下),在此提供腾讯云 serverless 部署方法
@@ -101,6 +102,7 @@ v4.29.9 加入了生成随机中国 IP 功能, 在请求时加上 `randomCNIP=tr
 5. 输入`应用名`,上传方式选择`代码仓库`,进行 GitHub 授权(如已授权可跳过这一步),代码仓库选择刚刚 fork 的项目
 6. 启动文件填入:
 
+
 ```
 #!/bin/bash
 export PORT=9000
@@ -110,8 +112,9 @@ export PORT=9000
 7. 点击`完成`,等待部署完成,点击`资源列表`的 `API网关` 里的 `URL`,正常情况会打开文档地址,点击文档`例子`可查看接口调用效果
 
 - 注意
-    - 腾讯云 serverless 并不是免费的,前三个月有免费额度,之后收费
-    - 当前(2024-08-24), 用此法创建的话, 会`默认`关联一个"日志服务-日志主题"(创建过程中没有提醒), 此服务是计量收费的
+  - 腾讯云 serverless 并不是免费的,前三个月有免费额度,之后收费
+  - 当前(2024-08-24), 用此法创建的话, 会`默认`关联一个"日志服务-日志主题"(创建过程中没有提醒), 此服务是计量收费的
+
 
 ## 可以使用代理
 
@@ -121,7 +124,7 @@ export PORT=9000
 // 例子
 const url = `http://localhost:3000/song/url?id=33894312&proxy=http://121.196.226.246:84`
 fetch(url).then(function () {
-    // do what you want
+  // do what you want
 })
 
 // 结果
@@ -135,21 +138,24 @@ v3.3.0 后支持使用 PAC 代理,如 `?proxy=http://192.168.0.1/proxy.pac`
 v3.31.0 后支持 Node.js 调用,导入的方法为`module`内的文件名,返回内容包含`status`和`body`,`status`为状态码,`body`为请求返回内容,参考`module_example` 文件夹下的 `test.js`
 
 ```js
-const { login_cellphone, user_cloud } = require("@neteasecloudmusicapienhanced/api")
+const {
+  login_cellphone,
+  user_cloud,
+} = require('@neteasecloudmusicapienhanced/api')
 async function main() {
-    try {
-        const result = await login_cellphone({
-            phone: "手机号",
-            password: "密码",
-        })
-        console.log(result)
-        const result2 = await user_cloud({
-            cookie: result.body.cookie, // 凭证
-        })
-        console.log(result2.body)
-    } catch (error) {
-        console.log(error)
-    }
+  try {
+    const result = await login_cellphone({
+      phone: '手机号',
+      password: '密码',
+    })
+    console.log(result)
+    const result2 = await user_cloud({
+      cookie: result.body.cookie, // 凭证
+    })
+    console.log(result2.body)
+  } catch (error) {
+    console.log(error)
+  }
 }
 main()
 ```
@@ -158,9 +164,9 @@ main()
 
 ```ts
 // test.ts
-import { banner } from "@neteasecloudmusicapienhanced/api"
+import { banner } from '@neteasecloudmusicapienhanced/api'
 banner({ type: 0 }).then((res) => {
-    console.log(res)
+  console.log(res)
 })
 ```
 
@@ -176,6 +182,7 @@ request 相关的环境变量
 4. HTTPS_PROXY
 5. no_proxy
 6. NO_PROXY
+
 
 ```shell
 docker pull moefurina/ncm-api
@@ -210,6 +217,7 @@ $ sudo docker run -d -p 3000:3000 netease-music-api
 - 请求参数模式下, 解密结果可直接带到 `/api.html` 继续调试
 - 需要返回值加密时, 可传 `e_r=1`, `weapi` 和 `eapi` 都支持
 - 目前支持算法 有 `weapi`, `eapi`, `linuxapi` 和 `xeapi` (xeapi 是一种不加密的特殊算法, 主要用于调试加密前的原始请求参数)
+
 
 ## 接口文档
 
@@ -818,6 +826,8 @@ tags: 歌单标签
 
 `lasttime` : 返回数据的 `lasttime` ,默认-1,传入上一次返回结果的 lasttime,将会返回下一页的数据
 
+接口会传入官方客户端使用的 `fromRN=true`，登录用户读取自己的动态时可获得网易云允许本人查看的非公开动态。返回的 `size` 是网易云账户侧统计值，不保证等于分页后实际可获取的动态数量。
+
 **接口地址 :** `/user/event`
 
 **调用例子 :** `/user/event?uid=32953014` `/user/event?uid=32953014&limit=1&lasttime=1558011138743`
@@ -834,6 +844,38 @@ tags: 歌单标签
 24 分享专栏文章
 41、21 分享视频
 ```
+
+### 获取当前登录用户的全部可枚举动态
+
+说明 : 登录后调用此接口，会组合 `/user/account` 与 `/user/event` 的原子能力：先从 Cookie 取得当前用户 id，再自动跟随 `lasttime` 游标读取至 `more=false`。接口返回网易云允许当前用户本人查看的公开及非公开动态，不能读取其他用户的私密动态。
+
+本接口不接受 `limit` 或 `lasttime`，一次请求会完成全部上游分页。账号动态较多时，请预留足够的请求时间。
+
+数量字段说明：
+
+- `size`：网易云返回的账户统计数量，可能包含已删除、被屏蔽、资源失效或旧类型且不再下发的记录。
+- `retrievedCount`：本次实际取得的唯一动态数量，始终等于 `events.length`。
+- `unavailableCount`：`size - retrievedCount` 的正差值；缺失记录没有返回 id，无法继续读取或修改。
+- `sizeMismatch`：`size` 与 `retrievedCount` 是否不一致。若上游未返回 `size`，相关字段为 `null`。
+- `pageCount`：本次实际请求的上游分页数量。
+
+每条动态的 `privacySetting` 表示当前可见权限：`0` 为所有人，`1` 为我关注的人，`2` 为仅自己，`6` 为互相关注的人。
+
+**接口地址 :** `/user/event/all`
+
+**调用例子 :** `/user/event/all`
+
+### 修改动态可见权限
+
+说明 : 登录后调用此接口，可以修改当前账号本人发布的单条动态的可见权限。此接口只负责一次原子修改；上游没有批量修改接口。如需批量操作，可先调用 `/user/event/all` 并按 `privacySetting` 筛选，再由调用方逐条调用本接口，同时自行处理限速、失败重试和部分成功。
+
+**必选参数 :** `evId` : 动态 id
+
+`privacy` : 目标可见权限。`0` 为所有人，`1` 为我关注的人，`2` 为仅自己，`6` 为互相关注的人
+
+**接口地址 :** `/event/privacy`
+
+**调用例子 :** `/event/privacy?evId=6712917601&privacy=0`
 
 ### 转发用户动态
 
@@ -1222,6 +1264,7 @@ tags: 歌单标签
 
 > 如果你设置 limit=50&offset=100，你就会得到第 101-150 首歌曲
 
+
 ### 歌单详情动态
 
 说明 : 调用后可获取歌单详情动态部分,如评论数,是否收藏,播放数
@@ -1508,6 +1551,7 @@ tags: 歌单标签
 
 - （可能存在）JSON 歌曲元数据
 
+
 ```
 {"t":0,"c":[{"tx":"作曲: "},{"tx":"柳重言","li":"http://p1.music.126.net/Icj0IcaOjH2ZZpyAM-QGoQ==/6665239487822533.jpg","or":"orpheus://nm/artist/home?id=228547&type=artist"}]}
 {"t":5403,"c":[{"tx":"编曲: "},{"tx":"Alex San","li":"http://p1.music.126.net/pSbvYkrzZ1RFKqoh-fA9AQ==/109951166352922615.jpg","or":"orpheus://nm/artist/home?id=28984845&type=artist"}]}
@@ -1523,6 +1567,7 @@ tags: 歌单标签
 - `or`：云音乐 app 内路径；例中作用即打开艺术家主页
 
 * 逐字歌词
+
 
 ```
 [16210,3460](16210,670,0)还(16880,410,0)没...
@@ -1754,23 +1799,23 @@ tags: 歌单标签
 
 ```json
 {
-    "data": [
-        {
-            "latestLikedUsers": null,
-            "liked": false,
-            "comments": null,
-            "resourceType": 4,
-            "resourceId": 186016,
-            "commentUpgraded": false,
-            "musicianSaidCount": 0,
-            "commentCountDesc": "100w+",
-            "likedCount": 347,
-            "commentCount": 1970844,
-            "shareCount": 109721,
-            "threadId": "R_SO_4_186016"
-        }
-    ],
-    "code": 200
+  "data": [
+    {
+      "latestLikedUsers": null,
+      "liked": false,
+      "comments": null,
+      "resourceType": 4,
+      "resourceId": 186016,
+      "commentUpgraded": false,
+      "musicianSaidCount": 0,
+      "commentCountDesc": "100w+",
+      "likedCount": 347,
+      "commentCount": 1970844,
+      "shareCount": 109721,
+      "threadId": "R_SO_4_186016"
+    }
+  ],
+  "code": 200
 }
 ```
 
@@ -1939,71 +1984,71 @@ tags: 歌单标签
 
 1. 发送评论
 
-    **必选参数**
+   **必选参数**
 
-    `t`:1 发送, 2 回复
+   `t`:1 发送, 2 回复
 
-    `type`: 数字,资源类型,对应歌曲,mv,专辑,歌单,电台,视频对应以下类型
+   `type`: 数字,资源类型,对应歌曲,mv,专辑,歌单,电台,视频对应以下类型
 
-    ```
-    0: 歌曲
+   ```
+   0: 歌曲
 
-    1: mv
+   1: mv
 
-    2: 歌单
+   2: 歌单
 
-    3: 专辑
+   3: 专辑
 
-    4: 电台
+   4: 电台
 
-    5: 视频
+   5: 视频
 
-    6: 动态
-    ```
+   6: 动态
+   ```
 
-    `id`:对应资源 id
+   `id`:对应资源 id
 
-    `content` :要发送的内容
+   `content` :要发送的内容
 
-    `commentId` :回复的评论 id (回复评论时必填)
+   `commentId` :回复的评论 id (回复评论时必填)
 
-    **调用例子** : `/comment?t=1&type=1&id=5436712&content=test` (往广岛之恋 mv 发送评论: test)
+   **调用例子** : `/comment?t=1&type=1&id=5436712&content=test` (往广岛之恋 mv 发送评论: test)
 
-    注意：如给动态发送评论，则不需要传 id，需要传动态的 `threadId`,如：`/comment?t=1&type=6&threadId=A_EV_2_6559519868_32953014&content=test`
+   注意：如给动态发送评论，则不需要传 id，需要传动态的 `threadId`,如：`/comment?t=1&type=6&threadId=A_EV_2_6559519868_32953014&content=test`
 
 2. 删除评论
 
-    **必选参数**
+   **必选参数**
 
-    `t`:0 删除
+   `t`:0 删除
 
-    `type`: 数字,资源类型,对应歌曲,mv,专辑,歌单,电台,视频对应以下类型
+   `type`: 数字,资源类型,对应歌曲,mv,专辑,歌单,电台,视频对应以下类型
 
-    ```
-    0: 歌曲
+   ```
+   0: 歌曲
 
-    1: mv
+   1: mv
 
-    2: 歌单
+   2: 歌单
 
-    3: 专辑
+   3: 专辑
 
-    4: 电台节目
+   4: 电台节目
 
-    5: 视频
+   5: 视频
 
-    6: 动态
+   6: 动态
 
-    7: 电台
+   7: 电台
 
-    ```
+   ```
 
-    `id`:对应资源 id
-    `content` :内容 id,可通过 `/comment/mv` 等接口获取
+   `id`:对应资源 id
+   `content` :内容 id,可通过 `/comment/mv` 等接口获取
 
-    **调用例子** : `/comment?t=0&type=1&id=5436712&commentId=1535550516319` (在广岛之恋 mv 删除评论)
+   **调用例子** : `/comment?t=0&type=1&id=5436712&commentId=1535550516319` (在广岛之恋 mv 删除评论)
 
-    注意：如给动态删除评论，则不需要传 id，需要传动态的 `threadId`,如：`/comment?t=0&type=6&threadId=A_EV_2_6559519868_32953014&commentId=1419516382`
+   注意：如给动态删除评论，则不需要传 id，需要传动态的 `threadId`,如：`/comment?t=0&type=6&threadId=A_EV_2_6559519868_32953014&commentId=1419516382`
 
 ### banner
 
@@ -2909,6 +2954,7 @@ type : 地区
 - 适合 Vercel、Netlify 等有请求体限制的平台
 - 需要前端配合实现
 
+
 #### 客户端直传相关接口
 
 **获取上传凭证**
@@ -2926,14 +2972,14 @@ type : 地区
 
 ```json
 {
-    "code": 200,
-    "data": {
-        "needUpload": true,
-        "songId": "...",
-        "uploadToken": "...",
-        "uploadUrl": "...",
-        "resourceId": "..."
-    }
+  "code": 200,
+  "data": {
+    "needUpload": true,
+    "songId": "...",
+    "uploadToken": "...",
+    "uploadUrl": "...",
+    "resourceId": "..."
+  }
 }
 ```
 
@@ -2955,12 +3001,14 @@ type : 地区
 - `artist`: 艺术家
 - `album`: 专辑名
 
+
 #### 客户端直传流程
 
 1. 客户端计算文件 MD5
 2. 调用 `/cloud/upload/token` 获取上传凭证
 3. 如果 `needUpload` 为 true,直接 PUT 文件到 `uploadUrl`
 4. 调用 `/cloud/upload/complete` 完成导入
+
 
 ### 云盘歌曲信息匹配纠正
 
@@ -4236,37 +4284,38 @@ ONLINE 已发布
 **可选参数**
 
 - 状态（非必填）：
-    - `displayStatus: null`（默认）：返回所有状态的声音
-    - `displayStatus: "ONLINE"`：已发布的声音
-    - `displayStatus: "AUDITING"`：审核中的声音
-    - `displayStatus: "ONLY_SELF_SEE"`：尽自己可见的声音
-    - `displayStatus: "SCHEDULE_PUBLISH"`：定时发布的声音
-    - `displayStatus: "TRANSCODE_FAILED"`：上传失败的声音
-    - `displayStatus: "PUBLISHING"`：发布中的声音
-    - `displayStatus: "FAILED"`：发布失败的声音
+  - `displayStatus: null`（默认）：返回所有状态的声音
+  - `displayStatus: "ONLINE"`：已发布的声音
+  - `displayStatus: "AUDITING"`：审核中的声音
+  - `displayStatus: "ONLY_SELF_SEE"`：尽自己可见的声音
+  - `displayStatus: "SCHEDULE_PUBLISH"`：定时发布的声音
+  - `displayStatus: "TRANSCODE_FAILED"`：上传失败的声音
+  - `displayStatus: "PUBLISHING"`：发布中的声音
+  - `displayStatus: "FAILED"`：发布失败的声音
 
 - `limit: 20`：每次返回的声音数量（最多 200 个）
 
 - 搜索关键词：
-    - `name: null`：返回所有的声音
-    - `name: [关键词]`：返回包含指定关键词的声音文件
+  - `name: null`：返回所有的声音
+  - `name: [关键词]`：返回包含指定关键词的声音文件
 
 - `offset: 0`：偏移量，用于分页，默认为 0，表示从第一个声音开始获取
 
 - 博客：
-    - `radioId: null`：返回所有电台的声音
-    - `radioId: [播客id]`：返回特定播客的声音
+  - `radioId: null`：返回所有电台的声音
+  - `radioId: [播客id]`：返回特定播客的声音
 
 - 是否公开：
-    - `type: null`：返回所有类型的声音
-    - `type: "PUBLIC"`：返回公开的声音
-    - `type: "PRIVATE"`：返回隐私的声音
+  - `type: null`：返回所有类型的声音
+  - `type: "PUBLIC"`：返回公开的声音
+  - `type: "PRIVATE"`：返回隐私的声音
 
 - 是否付费：
-    - `voiceFeeType: null`（默认）：返回所有类型的声音
-    - `voiceFeeType: -1`：返回所有类型的声音
-    - `voiceFeeType: 0`：返回免费的声音
-    - `voiceFeeType: 1`：返回收费的声音
+  - `voiceFeeType: null`（默认）：返回所有类型的声音
+  - `voiceFeeType: -1`：返回所有类型的声音
+  - `voiceFeeType: 0`：返回免费的声音
+  - `voiceFeeType: 1`：返回收费的声音
+
 
 ### 播客声音详情
 
@@ -4322,27 +4371,33 @@ ONLINE 已发布
 
 ### 播客上传声音
 
-说明: 可以上传声音到播客,例子在 `/public/voice_upload.html` 访问地址: <a href="/voice_upload.html" target="_blank">/voice_upload.html</a>
+说明: 登录后调用此接口,使用`'Content-Type': 'multipart/form-data'`上传声音文件 formData(name 为`songFile`),可通过 formData(name 为`imgFile`)同时上传声音封面。例子在 `/public/voice_upload.html` 访问地址: <a href="/voice_upload.html" target="_blank">/voice_upload.html</a>
 
 **接口地址:** `/voice/upload`
 
 **必选参数：**
-`voiceListId`: 播客 id
 
-`coverImgId`: 播客封面
+`songFile`: 声音文件
+
+`voiceListId`: 播客 id
 
 `categoryId`: 分类 id
 
-`secondCategoryId`:次级分类 id
+`secondCategoryId`: 次级分类 id
 
 `description`: 声音介绍
 
 **可选参数：**
+
+`imgFile`: 声音封面图片文件,上传后会自动生成图片 id。与`coverImgId`同时传入时,优先使用`imgFile`
+
+`coverImgId`: 已上传的声音封面图片 id,未传入`imgFile`时使用该值
+
 `songName`: 声音名称
 
-`privacy`: 设为隐私声音,播客如果是隐私博客,则必须设为 1
+`privacy`: 设为隐私声音,播客如果是隐私播客,则必须设为 1
 
-`publishTime`:默认立即发布,定时发布的话需传入时间戳
+`publishTime`: 默认立即发布,定时发布的话需传入时间戳
 
 `autoPublish`: 是否发布动态,是则传入 1
 
@@ -4913,18 +4968,18 @@ bitrate = Math.floor(br / 1000)
 
 ```javascript
 let local = encodeURIComponent(
-    JSON.stringify([
-        {
-            name: "アイニーブルー", // 歌曲名称
-            artist: "ZLMS", // 艺术家名称
-            album: "アイニーブルー", // 专辑名称
-        },
-        {
-            name: "ファンタズマ",
-            artist: "sasakure.UK",
-            album: "未来イヴ",
-        },
-    ]),
+  JSON.stringify([
+    {
+      name: 'アイニーブルー', // 歌曲名称
+      artist: 'ZLMS', // 艺术家名称
+      album: 'アイニーブルー', // 专辑名称
+    },
+    {
+      name: 'ファンタズマ',
+      artist: 'sasakure.UK',
+      album: '未来イヴ',
+    },
+  ]),
 )
 ```
 
@@ -4947,10 +5002,10 @@ let text = encodeURIComponent(`アイニーブルー ZLMS
 
 ```javascript
 let link = encodeURIComponent(
-    JSON.stringify([
-        "https://i.y.qq.com/n2/m/share/details/taoge.html?id=7716341988&hosteuin=",
-        "https://i.y.qq.com/n2/m/share/details/taoge.html?id=8010042041&hosteuin=",
-    ]),
+  JSON.stringify([
+    'https://i.y.qq.com/n2/m/share/details/taoge.html?id=7716341988&hosteuin=',
+    'https://i.y.qq.com/n2/m/share/details/taoge.html?id=8010042041&hosteuin=',
+  ]),
 )
 ```
 
@@ -5036,14 +5091,14 @@ let link = encodeURIComponent(
 
 ```javascript
 let data = encodeURIComponent(
-    JSON.stringify([
-        {
-            translateType: 1,
-            startTimeStamp: 800,
-            translateLyricsText: "让我逃走吧、声音已经枯萎",
-            originalLyricsText: "逃がし てくれって声を枯らした",
-        },
-    ]),
+  JSON.stringify([
+    {
+      translateType: 1,
+      startTimeStamp: 800,
+      translateLyricsText: '让我逃走吧、声音已经枯萎',
+      originalLyricsText: '逃がし てくれって声を枯らした',
+    },
+  ]),
 )
 ```
 
@@ -5139,6 +5194,7 @@ let data = encodeURIComponent(
 
 **调用例子:** `/broadcast/sub?id=5&t=1`
 
+
 ### 用户的创建歌单列表
 
 说明 : 调用此接口, 传入用户id, 获取用户的创建歌单列表
@@ -5212,6 +5268,7 @@ let data = encodeURIComponent(
 **接口地址 :** `/voicelist/my/created`
 
 **调用例子 :** `/voicelist/my/created`
+
 
 ### DIFM电台 - 分类
 
@@ -5391,7 +5448,7 @@ let data = encodeURIComponent(
 
 **接口地址 :** `/comment/report`
 
-*_调用例子 :_ `/comment/report?id=2058263032&cid=123456789&reason=人身攻击`
+**调用例子 :* `/comment/report?id=2058263032&cid=123456789&reason=人身攻击`
 
 ### 多级行政区划数据
 
@@ -5587,98 +5644,128 @@ let data = encodeURIComponent(
 
 **调用例子:** `/rep/ugc/user/collect-vip?activityId=5001`
 
+### 云小编 - 剩余抽奖次数
+
+说明: 登录后调用此接口, 获取今日云小编抽奖剩余次数
+
+**可选参数:**
+
+`activityId`: 活动 ID, 默认 `6501202`
+
+**接口地址:** `/middle/play/lottery/remain/chance`
+
+**调用例子:** `/middle/play/lottery/remain/chance?activityId=6501202`
+
+### 云小编 - 每日抽奖
+
+说明: 登录后调用此接口, 消耗 200 积分进行抽奖, 每日最多抽 3 次
+
+> 注意: 抽奖失败也消耗每日次数, 请先调用 `/rep/ugc/user/get` 查询可用积分
+
+**可选参数:**
+
+`activityId`: 活动 ID, 默认 `6501202`
+
+`drawCount`: 未知, 默认 `1`
+
+`checkToken`: 易盾反作弊 Token, 默认自动获取
+
+**接口地址:** `/middle/play/do/lottery`
+
+**调用例子:** `/middle/play/do/lottery?activityId=6501202&drawCount=1`
+
 ### 发送/删除评论
 
 说明 : 调用此接口,可发送评论或者删除评论
 
 1. 发送评论
 
-    **必选参数**
+   **必选参数**
 
-    `type`: 数字,资源类型,对应歌曲,mv,专辑,歌单,电台,视频对应以下类型
+   `type`: 数字,资源类型,对应歌曲,mv,专辑,歌单,电台,视频对应以下类型
 
-    ```
-    0: 歌曲
+   ```
+   0: 歌曲
 
-    1: mv
+   1: mv
 
-    2: 歌单
+   2: 歌单
 
-    3: 专辑
+   3: 专辑
 
-    4: 电台
+   4: 电台
 
-    5: 视频
+   5: 视频
 
-    6: 动态
-    ```
+   6: 动态
+   ```
 
-    `id`: 对应资源 id
+   `id`: 对应资源 id
 
-    `content`: 要发送的内容
+   `content`: 要发送的内容
 
-    **调用例子** : `/comment/add?type=1&id=5436712&content=test` (往广岛之恋 mv 发送评论: test)
+   **调用例子** : `/comment/add?type=1&id=5436712&content=test` (往广岛之恋 mv 发送评论: test)
 
 2. 回复评论
 
-    **必选参数**
+   **必选参数**
 
-    `type`: 数字,资源类型,对应歌曲,mv,专辑,歌单,电台,视频对应以下类型
+   `type`: 数字,资源类型,对应歌曲,mv,专辑,歌单,电台,视频对应以下类型
 
-    ```
-    0: 歌曲
+   ```
+   0: 歌曲
 
-    1: mv
+   1: mv
 
-    2: 歌单
+   2: 歌单
 
-    3: 专辑
+   3: 专辑
 
-    4: 电台
+   4: 电台
 
-    5: 视频
+   5: 视频
 
-    6: 动态
-    ```
+   6: 动态
+   ```
 
-    `id`: 对应资源 id
+   `id`: 对应资源 id
 
-    `cid`: 评论 id
+   `cid`: 评论 id
 
-    `content`: 要发送的内容
+   `content`: 要发送的内容
 
-    **调用例子** : `/comment/add?type=1&id=5436712&cid=1535550516319&content=test` (往广岛之恋 mv 回复test评论: test)
+   **调用例子** : `/comment/add?type=1&id=5436712&cid=1535550516319&content=test` (往广岛之恋 mv 回复test评论: test)
 
 3. 删除评论
 
-    **必选参数**
+   **必选参数**
 
-    `type`: 数字,资源类型,对应歌曲,mv,专辑,歌单,电台,视频对应以下类型
+   `type`: 数字,资源类型,对应歌曲,mv,专辑,歌单,电台,视频对应以下类型
 
-    ```
-    0: 歌曲
+   ```
+   0: 歌曲
 
-    1: mv
+   1: mv
 
-    2: 歌单
+   2: 歌单
 
-    3: 专辑
+   3: 专辑
 
-    4: 电台节目
+   4: 电台节目
 
-    5: 视频
+   5: 视频
 
-    6: 动态
+   6: 动态
 
-    7: 电台
+   7: 电台
 
-    ```
+   ```
 
-    `id`: 对应资源 id
+   `id`: 对应资源 id
 
-    `cid`: 评论 id
+   `cid`: 评论 id
 
-    **调用例子** : `/comment?type=1&id=5436712&cid=1535550516319` (在广岛之恋 mv 删除评论)
+   **调用例子** : `/comment?type=1&id=5436712&cid=1535550516319` (在广岛之恋 mv 删除评论)
 
 ### 获取在线设备列表
 

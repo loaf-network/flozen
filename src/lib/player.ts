@@ -1,7 +1,15 @@
 import { reactive, ref, watch } from "vue"
-import { ncmSongUrl, ncmLyric, ncmScrobble, ncmSubmitPlayState, type SearchSong } from "./api"
+import {
+    ncmSongUrl,
+    ncmLyric,
+    ncmScrobble,
+    ncmSubmitPlayState,
+    type SearchSong,
+    type SongUrlRes,
+} from "./api"
 import { parseLrc, getCurrentLine, type LyricLine } from "./lyrics"
 import { loadConfig } from "./store"
+import { getVipLevel, type VipLevel } from "./ncmActions"
 import { initMedia, updateMedia, clearMedia } from "./smtc"
 import {
     loadPlayerSnapshot,
@@ -52,7 +60,8 @@ export interface PlayerState {
     currentTime: number
     duration: number
     volume: number
-    quality: "standard" | "higher" | "exhigh" | "lossless" | "hires"
+    quality: "standard" | "higher" | "exhigh" | "lossless" | "hires" | "jymaster"
+    actualQuality: PlayerState["quality"]
     repeatMode: "none" | "all" | "one"
     shuffle: boolean
     lyrics: LyricLine[]
@@ -70,12 +79,83 @@ export const player = reactive<PlayerState>({
     duration: 0,
     volume: 0.7,
     quality: "exhigh",
+    actualQuality: "exhigh",
     repeatMode: "none",
     shuffle: false,
     lyrics: [],
     currentLyricIndex: -1,
     loading: false,
 })
+
+// ── 音质等级 ──
+
+export interface QualityOption {
+    value: PlayerState["quality"]
+    label: string
+    desc: string
+    vip?: VipLevel
+}
+
+// 音质由码率/封装区分，vip 字段标记该档位所需的最低会员等级（文案与网易云官方一致）
+export const QUALITY_OPTIONS: QualityOption[] = [
+    { value: "standard", label: "标准", desc: "128K" },
+    { value: "higher", label: "较高", desc: "192K" },
+    { value: "exhigh", label: "极高", desc: "320K" },
+    { value: "lossless", label: "无损", desc: "FLAC", vip: "vip" },
+    { value: "hires", label: "高清臻音", desc: "Hi-Res", vip: "svip" },
+    { value: "jymaster", label: "超清母带", desc: "母带", vip: "svip" },
+]
+
+export function qualityIndex(q: PlayerState["quality"]): number {
+    return QUALITY_OPTIONS.findIndex((o) => o.value === q)
+}
+
+// 各会员等级可用的最高音质
+const VIP_QUALITY_LIMIT: Record<VipLevel, PlayerState["quality"]> = {
+    none: "exhigh",
+    vip: "lossless",
+    svip: "jymaster",
+}
+
+// 已探测过可用音质的歌曲缓存（songId → 可用最高档位），避免反复降级请求
+const qualityFallbackCache = new Map<number, PlayerState["quality"]>()
+
+// 用户设置的音质不能突破会员限制：非会员最高 极高，黑胶 VIP 最高 无损，黑胶 SVIP 最高 超清母带
+export async function resolveEffectiveQuality(): Promise<PlayerState["quality"]> {
+    const pref = player.quality
+    const level = await getVipLevel()
+    const limit = VIP_QUALITY_LIMIT[level]
+    return qualityIndex(pref) <= qualityIndex(limit) ? pref : limit
+}
+
+// 请求歌曲播放地址：按会员限制选择音质，服务器拒绝（无 url）时逐级降级并缓存
+async function fetchSongUrl(songId: number): Promise<{
+    url: string | null
+    data?: SongUrlRes["data"]
+    quality: PlayerState["quality"]
+}> {
+    const config = await loadConfig()
+    let q = qualityFallbackCache.get(songId) ?? (await resolveEffectiveQuality())
+    for (;;) {
+        const res = await ncmSongUrl(songId, q, config.ncmCookie)
+        const d = res.data?.[0]
+        if (d?.url) {
+            qualityFallbackCache.set(songId, q)
+            return { url: d.url, data: res.data, quality: q }
+        }
+        // VIP/付费/无版权歌曲（fee 非 0）或返回为空时不值得继续降级
+        if (d?.fee || !res.data?.length) {
+            qualityFallbackCache.set(songId, q)
+            return { url: null, data: res.data, quality: q }
+        }
+        const idx = qualityIndex(q)
+        if (idx <= 0) {
+            qualityFallbackCache.set(songId, q)
+            return { url: null, data: res.data, quality: q }
+        }
+        q = QUALITY_OPTIONS[idx - 1].value
+    }
+}
 
 // ── 持久化：播放历史 + 队列快照 ──
 export const playHistory = reactive<HistoryEntry[]>([])
@@ -130,7 +210,13 @@ async function submitPlayState(song: SearchSong, progress: number) {
 const playedShuffleIds = new Set<number>()
 let plannedNextIndex = -1
 let plannedNextId = -1
-let preloaded: { songId: number; url: string; lyrics: LyricLine[] } | null = null
+let preloaded: {
+    songId: number
+    url: string
+    lyrics: LyricLine[]
+    prefQuality: PlayerState["quality"] // 预加载发起时用户设置的音质
+    quality: PlayerState["quality"] // 实际生效（可能被降级）的音质
+} | null = null
 let preloadingId = -1
 let preloadFailedId = -1
 const preloadAudio = new Audio()
@@ -177,14 +263,16 @@ async function preloadNext() {
         return
     preloadingId = song.id
     try {
-        const config = await loadConfig()
-        const [urlRes, lyricRes] = await Promise.all([
-            ncmSongUrl(song.id, player.quality, config.ncmCookie),
-            ncmLyric(song.id),
-        ])
-        const url = urlRes.data?.[0]?.url
+        const [urlRes, lyricRes] = await Promise.all([fetchSongUrl(song.id), ncmLyric(song.id)])
+        const url = urlRes.url
         if (url) {
-            preloaded = { songId: song.id, url, lyrics: parseLrc(lyricRes.lrc?.lyric ?? "") }
+            preloaded = {
+                songId: song.id,
+                url,
+                lyrics: parseLrc(lyricRes.lrc?.lyric ?? ""),
+                prefQuality: player.quality,
+                quality: urlRes.quality,
+            }
             // 预热音频缓冲，切歌时命中浏览器缓存
             preloadAudio.src = url
         } else {
@@ -238,6 +326,7 @@ async function restorePlayerState() {
         player.volume = snap.volume
         audio.volume = snap.volume
         player.quality = snap.quality
+        player.actualQuality = snap.quality
         player.repeatMode = snap.repeatMode
         player.shuffle = snap.shuffle
         player.currentTime = snap.currentTime
@@ -332,10 +421,15 @@ async function loadAndPlay(song: SearchSong, seekTo = 0) {
     }
 
     try {
-        const cached = preloaded?.songId === song.id ? preloaded : null
+        // 预加载结果仅在音质设置未变时可用（防 setQuality 后旧音质缓存被误用）
+        const cached =
+            preloaded?.songId === song.id && preloaded.prefQuality === player.quality
+                ? preloaded
+                : null
         if (cached) {
             preloaded = null
             audio.src = cached.url
+            player.actualQuality = cached.quality
             audio.play().catch(() => {})
             syncMediaMetadata(song)
             setWindowTitle(song)
@@ -346,24 +440,23 @@ async function loadAndPlay(song: SearchSong, seekTo = 0) {
             startScrobbleTimer(song)
             return
         }
-        const config = await loadConfig()
-        const urlRes = await ncmSongUrl(song.id, player.quality, config.ncmCookie)
-        const url = urlRes.data?.[0]?.url
+        const { url, data: urlData, quality } = await fetchSongUrl(song.id)
         if (!url) {
             // 检查是否为VIP歌曲或版权受限
-            if (urlRes.data?.[0]?.fee === 1) {
+            if (urlData?.[0]?.fee === 1) {
                 const { toast } = await import("vue-sonner")
-                toast.error("该歌曲为VIP专享，请开通VIP后播放")
-            } else if (urlRes.data?.[0]?.fee === 4) {
+                toast.error("该歌曲为VIP专享，请开通VIP后播放。")
+            } else if (urlData?.[0]?.fee === 4) {
                 const { toast } = await import("vue-sonner")
-                toast.error("该歌曲需要购买专辑后播放")
+                toast.error("该歌曲需要购买专辑后播放。")
             } else {
                 const { toast } = await import("vue-sonner")
-                toast.error("该歌曲暂无版权，请尝试其他音源")
+                toast.error("该歌曲暂无版权，请尝试其他音源。")
             }
             return
         }
         audio.src = url
+        player.actualQuality = quality
         audio.play().catch(() => {})
         syncMediaMetadata(song)
         setWindowTitle(song)
@@ -398,7 +491,7 @@ async function checkLoginBeforePlay(): Promise<boolean> {
         const config = await loadConfig()
         if (!config.ncmCookie) {
             const { toast } = await import("vue-sonner")
-            toast.error("请先登录网易云账号")
+            toast.error("请先登录网易云账号。")
             // 延迟跳转登录页，让用户看到提示
             if (loginRedirectTimer) clearTimeout(loginRedirectTimer)
             loginRedirectTimer = setTimeout(async () => {
@@ -500,7 +593,9 @@ export function setVolume(vol: number) {
 
 export function setQuality(q: PlayerState["quality"]) {
     player.quality = q
+    player.actualQuality = q
     preloaded = null
+    qualityFallbackCache.clear() // 音质变更后重新探测可用档位
     if (player.currentSong) loadAndPlay(player.currentSong)
 }
 

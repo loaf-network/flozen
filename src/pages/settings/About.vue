@@ -34,12 +34,12 @@ async function checkUpdate() {
         latestVersion.value = tag
         hasUpdate.value = tag !== version
         if (hasUpdate.value) {
-            toast.success(`发现新版本 v${tag}，点击下载`)
+            toast.success(`发现新版本 v${tag}，点击下载。`)
         } else {
-            toast.success("当前已是最新版本")
+            toast.success("当前已是最新版本。")
         }
     } catch {
-        toast.error("检查更新失败，请稍后重试")
+        toast.error("检查更新失败，请稍后重试。")
     } finally {
         checking.value = false
     }

@@ -60,7 +60,7 @@ async function requireLogin() {
     if (playlists.value.length > 0) return true
     const config = await loadConfig()
     if (config.ncmCookie) return true
-    toast.error("请先登录网易云账号")
+    toast.error("请先登录网易云账号。")
     return false
 }
 

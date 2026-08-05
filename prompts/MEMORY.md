@@ -64,6 +64,13 @@
 
 ### 最近完成
 
+- **realIP 设置（隐私页）+ 音质按钮换行**：Privacy.vue 新增「网络标识（realIP）」区块（Input 手动设置/保存、自动获取按钮，`getRealIP` 导出并支持 force 强制刷新）；播放器音质按钮 4 字音质名（高清臻音/超清母带）自动换行
+- **SVIP 判定修复 + 会员状态展示**：`getVipLevel` 恢复 `musicPackage` 字段作为 SVIP 主判据（黑胶 SVIP 音乐包存在即 SVIP，redVipLevel≥7 兜底）——此前只信 `redVipLevel>=7` 导致真实 SVIP 被误判为普通 VIP；音质 Dialog 现展示「当前会员：黑胶 SVIP/VIP/非会员」便于自查
+- **AddToPlaylistDialog 滚动条美化**：歌单列表自定义滚动条（6px 圆角细条，`--muted-foreground` 语义色，hover 加深）
+- **API 响应归一化 + realIP 重写**：jelly 后端对部分接口（如 `/playlist/tracks`）返回 `{status, body, cookie}` 包装结构，`post()` 现自动解包 body（修复「添加成功却提示失败」的误判）；realIP 改用 ipify/ipinfo 多源 JSON 获取 + IPv4 格式校验，旧版本存入的错误缓存会被校验拦截并重新获取
+- **加入歌单错误原因透出**：`addSongToPlaylist`/`createPlaylistAndAdd` 失败时透出服务端 message（如「歌曲已存在」），Dialog 按原因提示；所有 sonner 文案统一句号结尾（含既有文件）
+- **音质切换 + 会员限制**：PlayerControls 左侧音质按钮 + **音质选择 Dialog**（6 档官方文案：标准128K/较高192K/极高320K/无损FLAC/高清臻音Hi-Res/超清母带，去掉臻音全景声与沉浸环绕声）；会员三级（`getVipLevel`：`/vip/info` redVipLevel≥7 为 SVIP、redVipLevel>0 为黑胶VIP、profile.vipType 兜底；5 分钟缓存 + in-flight 去重，失败不缓存时间戳）——非会员最高「极高」、黑胶VIP最高「无损」、黑胶SVIP最高「超清母带」；播放时 `resolveEffectiveQuality` 按会员等级限制，`fetchSongUrl` 服务器拒绝时逐级降级并缓存（fee≠0 或无数据不降级）；`player.actualQuality` 如实显示实际档位；预加载缓存携带 prefQuality 防音质变更后误用
+- **喜欢歌曲 + 加入歌单**：PlayerControls 右侧 Heart 实现喜欢（`ncmActions.ts`：likelist 缓存 Set + toggleLike，激活红色填充）；新增 ListPlus 按钮 + `AddToPlaylistDialog.vue`（shadcn Dialog：用户歌单列表选择加入 / 新建歌单并加入，错误原因透出）；新增 `ncmLikelist`（/likelist）、`ncmVipInfo`（/vip/info）API
 - **搜索页状态保持**：新增 `src/lib/searchState.ts`（模块级 reactive 单例，仿 player.ts 模式），Search.vue 的 query/results/suggests/hotTags/searched/offset/hasMore/scrollTop 全部迁入，路由切换（组件卸载重建）后回来自动接续上次搜索结果与滚动位置；`?q=` 跳转带新关键词时触发新搜索且不恢复旧滚动位置；doSearch 加 searchSeq 竞态防护（仅最新请求生效）
 - **移除 3D 歌曲墙（SongWall.vue）**：删除 `src/components/SongWall.vue` 及 Search.vue 中全部 3D 相关代码（`viewMode` 状态、平铺/3D 切换按钮、SongWall 分支），搜索结果固定使用 SongGrid 平铺网格；PlaylistDetail.vue 的「画廊/列表」切换与 3D 无关，保留；grep 确认无残留引用
 - **修复 issue #1（搜索建议下拉渲染崩溃）**：`/search/suggest` 返回的 songs 用 `artists`/`album`/`duration` 字段，与 `/cloudsearch` 的 `ar`/`al`/`dt` 不同；Search.vue 建议下拉原按 `s.al.picUrl`/`s.ar.map` 渲染导致 `TypeError` 使整个搜索页渲染失败（输入任意字符即闪烁/不显示）。修复：ncm.ts 新增 `SearchSuggestSong` 原始类型（修正 `SearchSuggestRes` 的错误标注），Search.vue 将 suggest 数据归一化为标准 `SearchSong`（album 缺失时兜底 `{id:-1,name:"",picUrl:""}`），img 加 `v-if="s.al.picUrl"` 防御空图；review 确认无其他同类字段假设错误

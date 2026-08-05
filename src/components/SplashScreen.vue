@@ -23,7 +23,7 @@ onMounted(async () => {
                 await saveConfig("ncmProfile", res.profile)
             }
         } catch {
-            toast.error("网络连接失败，已跳过账号同步")
+            toast.error("网络连接失败，已跳过账号同步。")
         }
     }
 

@@ -27,7 +27,7 @@ const discreteGpu = computed(() => gpus.value.find((g) => g.discrete))
 async function onToggleDiscrete(checked: boolean) {
     if (checked && !discreteGpu.value) {
         useDiscrete.value = false
-        toast.warning("未检测到独立显卡，将继续使用核显渲染")
+        toast.warning("未检测到独立显卡，将继续使用核显渲染。")
         return
     }
     try {
@@ -35,11 +35,11 @@ async function onToggleDiscrete(checked: boolean) {
         useDiscrete.value = checked
         toast.success(
             checked
-                ? `已启用独显渲染（${discreteGpu.value!.name}），重启应用后生效`
-                : "已恢复系统默认显卡调度，重启应用后生效",
+                ? `已启用独显渲染（${discreteGpu.value!.name}），重启应用后生效。`
+                : "已恢复系统默认显卡调度，重启应用后生效。",
         )
     } catch {
-        toast.error("设置显卡偏好失败")
+        toast.error("设置显卡偏好失败。")
     }
 }
 

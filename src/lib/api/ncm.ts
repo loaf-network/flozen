@@ -118,6 +118,19 @@ export interface LikeRes {
     message: string
 }
 
+export interface LikeListRes {
+    code: number
+    ids: number[]
+}
+
+export interface VipInfoRes {
+    code: number
+    data?: {
+        redVipLevel?: number
+        musicPackage?: { id?: number; name?: string; vipCode?: number }
+    } | null
+}
+
 // ─── Auth ───
 
 export function getQrKey() {
@@ -182,6 +195,18 @@ export function ncmLikeSong(id: number, like: boolean, cookie?: string) {
     return post<LikeRes>("/like", params)
 }
 
+export function ncmLikelist(uid: number, cookie?: string) {
+    const params: Record<string, string> = { uid: String(uid) }
+    if (cookie) params.cookie = cookie
+    return post<LikeListRes>("/likelist", params)
+}
+
+export function ncmVipInfo(cookie?: string) {
+    const params: Record<string, string> = {}
+    if (cookie) params.cookie = cookie
+    return post<VipInfoRes>("/vip/info", params)
+}
+
 // ─── Playlist ───
 
 export function ncmUserPlaylist(uid: number, cookie?: string) {
@@ -231,7 +256,7 @@ export function ncmPlaylistTracksOp(
         tracks: tracks.join(","),
     }
     if (cookie) params.cookie = cookie
-    return post<{ code: number }>("/playlist/tracks", params)
+    return post<{ code: number; message?: string; msg?: string }>("/playlist/tracks", params)
 }
 
 // ─── Toplist ───

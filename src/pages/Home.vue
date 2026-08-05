@@ -14,7 +14,7 @@ function playFromHistory(index: number) {
 
 function onClearHistory() {
     clearHistory()
-    toast.success("已清除播放记录")
+    toast.success("已清除播放记录。")
 }
 </script>
 
