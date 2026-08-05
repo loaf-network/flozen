@@ -6,7 +6,7 @@ export interface PlayerSnapshot {
     queueIndex: number
     currentTime: number
     volume: number
-    quality: "standard" | "higher" | "exhigh" | "lossless" | "hires"
+    quality: "standard" | "higher" | "exhigh" | "lossless" | "hires" | "jymaster"
     repeatMode: "none" | "all" | "one"
     shuffle: boolean
 }
