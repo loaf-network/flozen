@@ -1,13 +1,19 @@
-name: 🚀 优化建议
+name: 优化建议
 description: 提出性能、体验或代码层面的优化建议。
 labels: ["优化"]
 body:
-  - type: markdown
+  - type: checkboxes
+    id: checklist
     attributes:
-      value: |
-        ## 优化建议 🔧
-
-        无论是性能卡顿、操作繁琐还是代码结构问题，都欢迎提出。提交前，请先[搜索现有 Issue](https://github.com/loaf-network/flozen/issues)，确认没有重复建议。
+      label: 自查清单
+      description: 提交前，请确认以下事项。
+      options:
+        - label: 我已搜索过现有 Issue，确认没有重复建议。
+          required: true
+        - label: 我已确认使用的是最新版本（可在「设置 → 关于」中检查更新）。若不是，该问题可能会被忽略。
+          required: true
+        - label: 我确认我仔细阅读了该自查清单，并且保证提供的信息真实有效。
+          required: true
 
   - type: textarea
     id: description
@@ -39,14 +45,3 @@ body:
     attributes:
       label: 实现思路（可选）
       description: 如有实现想法、参考方案或相关代码位置，可以写在这里。
-
-  - type: checkboxes
-    id: checklist
-    attributes:
-      label: 自查清单
-      description: 提交前，请确认以下事项。
-      options:
-        - label: 我已确认使用的是最新版本（可在「设置 → 关于」中检查更新）
-          required: true
-        - label: 我已搜索过现有 Issue，确认没有重复建议
-          required: true

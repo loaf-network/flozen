@@ -64,7 +64,7 @@
 
 ### 最近完成
 
-- **Issue Template 新增**：`.github/ISSUE_TEMPLATE/` 下新增三个结构化表单（GitHub form schema）：`bug-report.yml`（🐛 Bug 反馈，label: `Bug`）、`feature-request.yml`（✨ 新功能请求，label: `新功能`）、`optimization.yml`（🚀 优化建议，label: `优化`——用户将原「文档」改为「优化」，仓库无文档 label）；均为中文，**不设 title 字段**（标题格式由用户自行填写），自查清单含「已确认使用最新版本」必选项（用户要求），文案统一中文标点（顿号分隔、句号收尾、全角括号），bug 模板音乐来源选项为用户自改（网易云音乐 / 与问题无关）；已用 Python 校验 YAML 语法与 schema 合法
+- **Issue Template 新增**：`.github/ISSUE_TEMPLATE/` 下新增三个结构化表单（GitHub form schema）：`bug-report.yml`（label: `Bug`）、`feature-request.yml`（label: `新功能`）、`optimization.yml`（label: `优化`——用户将原「文档」改为「优化」，仓库无文档 label）；模板名称无 emoji（`bug 反馈`/`新功能请求`/`优化建议`），**无 title 字段**，**无 markdown 区块**（保持简洁），**checkboxes 自查清单置于表单最上方**（用户后续要求删除「已确认最新版本」项，与 bug 模板的版本输入框重复；三个模板统一简化——bug 保留 2 项：搜索 Issue + 重启重登；feature/optimization 各保留 1 项：搜索 Issue），文案统一中文标点，bug 模板音乐来源选项为用户自改（网易云音乐 / 与问题无关）；已用 Python 校验 YAML 语法与 schema 合法
 - **全功能播放器实现**（从零构建）：
   - NCM API 扩展（ncm.ts）：+9 个函数（歌词、歌单 CRUD、收藏、歌曲详情）
   - 全局播放器 Store（player.ts）：HTMLAudioElement + reactive 单例，播放/暂停/上下首/队列/进度/音量/音质/循环/随机

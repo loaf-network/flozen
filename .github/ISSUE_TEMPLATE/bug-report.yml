@@ -1,13 +1,21 @@
-name: 🐛 Bug 反馈
+name: Bug 反馈
 description: 报告一个 Bug，帮助我们快速定位并修复。
 labels: ["Bug"]
 body:
-  - type: markdown
+  - type: checkboxes
+    id: checklist
     attributes:
-      value: |
-        ## 感谢反馈 🙏
-
-        请尽量完整地填写以下信息，以便我们更快地复现并修复问题。提交前，请先[搜索现有 Issue](https://github.com/loaf-network/flozen/issues)，确认没有重复反馈。
+      label: 自查清单
+      description: 提交前，请确认以下事项。
+      options:
+        - label: 我已搜索过现有 Issue，确认没有重复反馈。
+          required: true
+        - label: 我已尝试重启应用，问题仍然存在。
+          required: true
+        - label: 我保证我会详细描述问题，并提供复现步骤、日志或截图等信息，而不是仅仅写一句敷衍了事。
+          required: true
+        - label: 我确认我仔细阅读了该自查清单，并且保证提供的信息真实有效。
+          required: true
 
   - type: textarea
     id: description
@@ -54,10 +62,6 @@ body:
       description: 如有控制台输出或日志文件内容，请粘贴到这里（注意抹去账号、Cookie 等敏感信息）。
       render: shell
 
-  - type: markdown
-    attributes:
-      value: "## 环境信息"
-
   - type: dropdown
     id: os
     attributes:
@@ -92,15 +96,3 @@ body:
         - 与问题无关
     validations:
       required: true
-
-  - type: checkboxes
-    id: checklist
-    attributes:
-      label: 自查清单
-      description: 提交前，请确认以下事项。
-      options:
-        - label: 我已确认使用的是最新版本（可在「设置 → 关于」中检查更新）
-          required: true
-        - label: 我已搜索过现有 Issue，确认没有重复反馈
-          required: true
-        - label: 我已尝试重启应用并重新登录，问题仍然存在
