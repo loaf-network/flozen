@@ -1,6 +1,7 @@
 name: Bug 反馈
 description: 报告一个 Bug，帮助我们快速定位并修复。
-labels: ["Bug"]
+type: Bug
+labels: ["⭕ 等待处理"]
 body:
   - type: checkboxes
     id: checklist

@@ -1,6 +1,7 @@
 name: 新功能请求
 description: 提出一个新功能建议，让 Flozen 变得更好用。
-labels: ["新功能"]
+type: Feature
+labels: ["⭕ 等待处理"]
 body:
   - type: checkboxes
     id: checklist
